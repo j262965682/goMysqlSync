@@ -26,6 +26,8 @@ set GOARCH=amd64
 
 go build -o "goMysqlSync"
 
+chmod 777 goMysqlSync
+
 编辑配置文件 app.yml
 
 nohup ./goMysqlSync  -full  >/dev/null 2>goMysqlSync.log & 
