@@ -31,6 +31,7 @@ pos.Timestamp = ev.Header.Timestamp   #新加
 3. mysql 的binlog格式必须是 row 模式
 --- 
 
-### 本项目基于:
+### 本项目基于二次开发:
 github.com/siddontang/go-mysql
+
 github.com/wj596/go-mysql-transfer
