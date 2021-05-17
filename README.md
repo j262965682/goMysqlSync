@@ -32,6 +32,12 @@ chmod 777 goMysqlSync
 
 nohup ./goMysqlSync  -full  >/dev/null 2>goMysqlSync.log & 
 
+### 监控
+
+http://localhost:9595/metrics
+
+监控项包括 机器的CPU、磁盘情况 和 每秒网络流量值，以及 目标库的连接状态 和 程序每秒同步速度
+
 ### 注意事项:
 
 1. 需要使github.com/siddontang/go-mysql项目的Position结构体支持时间戳
