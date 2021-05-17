@@ -27,4 +27,6 @@ pos.Timestamp = ev.Header.Timestamp   #新加
 ```
 --- 
 2. 由于项目基于mysqldump，必须要有mysqldump的工具文件，并且在配置文件中指定路径，本项目 linux和windows 都支持
+--- 
 3. mysql 的binlog格式必须是 row 模式
+--- 
