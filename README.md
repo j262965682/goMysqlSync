@@ -4,7 +4,7 @@ golang mysql to mysql 轻量级多线程库表级数据同步
 ### 测试运行
 1. 设置当前binlog位置并且开始运行  
 
-`go run main.go -position mysql-bin.000469 324783 1619431429`
+`go run main.go -position mysql-bin.000001 1 1619431429`
 
 2. 查询当前binlog位置，参数n为秒数，查询结果为n秒前的binlog位置
 
