@@ -4,7 +4,7 @@ mysql->mysql多线程库表级数据同步
 
 ### 注意事项:
 
-需要使github.com/siddontang/go-mysql项目的Position结构体支持时间戳
+1. 需要使github.com/siddontang/go-mysql项目的Position结构体支持时间戳
 
 修改 "github.com/siddontang/go-mysql/mysql/position.go"文件  
 ``` 
