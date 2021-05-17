@@ -62,6 +62,7 @@ pos.Timestamp = ev.Header.Timestamp   #新加
 
 
 ### 本项目基于二次开发:
-github.com/siddontang/go-mysql
+<a href="https://github.com/go-mysql-org/go-mysql" target="_blank">github.com/siddontang/go-mysql</a>
 
-github.com/wj596/go-mysql-transfer
+<a href="https://github.com/wj596/go-mysql-transfer" target="_blank">github.com/wj596/go-mysql-transfer</a>
+
