@@ -3,25 +3,25 @@ addr: xxxxxxxx:3306
 user: xxxxxxx
 pass: xxxxxxx
 charset : utf8
-slave_id: 520 #slave ID
-flavor: mysql #mysql or mariadb,默认mysql
-mysqldump: /usr/local/mysql-5.7.31-winx64/bin/mysqldump.exe
+slave_id: 520               #slave ID
+flavor: mysql               #mysql or mariadb,默认mysql
+mysqldump: /usr/local/mysql-5.7.31/bin/mysqldump
 set-gtid-purged: OFF
 
 #系统相关配置
 data_dir: /usr/local/goMysqlSync #应用产生的数据存放地址，包括日志、缓存数据等，默认当前运行目录下store文件夹
 logger:
   file_name: system.log
-  level: debug #日志级别；支持：debug|info|warn|error，默认info
+  level: debug              #日志级别；支持：debug|info|warn|error，默认info
   store: /usr/local/goMysqlSync
 
 #prometheus相关配置
-label: test #prometheus exporter的tag
-enable_exporter: true #是否启用prometheus exporter，默认false     
-exporter_addr: 9595 #prometheus exporter端口，默认9595
+label: test                 #prometheus exporter的tag
+enable_exporter: true       #是否启用prometheus exporter，默认false     
+exporter_addr: 9595         #prometheus exporter端口，默认9595
 
 #目标类型
-target: mysql # 支持redis、mongodb、elasticsearch、rocketmq、kafka、rabbitmq
+target: mysql 
 #mysql连接配置
 mysql_addrs: xxxxxxxxx:3306 #mysql地址，多个用逗号分隔 
 mysql_username: xxxxxxxx    #mysql用户名
@@ -31,15 +31,15 @@ threads: 20                 #数据回放多线程数量
 #规则配置  
 rule:
   -
-    schema: test  #数据库名称
-    table: table_all_in #表名称 # table_all_in 表示 全部表
+    schema: test            #数据库名称
+    table: table_all_in     #表名称 # table_all_in 表示 全部表
     column_underscore_to_camel: true #列名称下划线转驼峰,默认为false
-    value_encoder: json  #值编码，支持json、kv-commas、v-commas；默认为json；json形如：{"id":123,"name":"wangjie"} 、kv-commas形如：id=123,name="wangjie"、v-commas形如：123,wangjie
+    value_encoder: json     #值编码，支持json、kv-commas、v-commas；默认为json；json形如：{"id":123,"name":"wangjie"} 、kv-commas形如：id=123,name="wangjie"、v-commas形如：123,wangjie
 #  -
 #    schema: test_bi_data_sync #数据库名称
-#    table: table_all_in #表名称 # table_all_in 表示 全部表
+#    table: table_all_in    #表名称 # table_all_in 表示 全部表
 #    column_underscore_to_camel: true #列名称下划线转驼峰,默认为false
-#    value_encoder: json  #值编码，支持json、kv-commas、v-commas；默认为json；json形如：{"id":123,"name":"wangjie"} 、kv-commas形如：id=123,name="wangjie"、v-commas形如：123,wangjie
+#    value_encoder: json    #值编码，支持json、kv-commas、v-commas；默认为json；json形如：{"id":123,"name":"wangjie"} 、kv-commas形如：id=123,name="wangjie"、v-commas形如：123,wangjie
 #
 #
 #
