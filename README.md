@@ -2,12 +2,18 @@
 mysql->mysql多线程库表级数据同步
 
 ### 测试运行
-设置当前binlog位置并且开始运行   
+设置当前binlog位置并且开始运行  
+
 `go run main.go -position mysql-bin.000469 324783 1619431429`
+
 查询当前binlog位置，参数n为秒数，查询结果为n秒前的binlog位置
+
 `go run main.go -status n`
+
 是否同步表结构       
+
 `go run main.go -full`
+
 
 ### 注意事项:
 
