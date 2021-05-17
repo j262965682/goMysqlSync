@@ -15,6 +15,7 @@ mysql->mysql多线程库表级数据同步
 `go run main.go -full`
 
 4. 若程序掉线，可以继续执行，回滚到 掉线时 900秒 之前的binlog位置重新开始同步
+
 `go run main.go`
 
 ### 注意事项:
