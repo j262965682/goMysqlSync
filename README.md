@@ -18,6 +18,18 @@ mysql->mysql多线程库表级数据同步
 
 `go run main.go`
 
+### 编译运行
+
+set GOOS=linux
+
+set GOARCH=amd64
+
+go build -o "goMysqlSync"
+
+编辑配置文件 app.yml
+
+nohup ./goMysqlSync  -full  >/dev/null 2>goMysqlSync.log & 
+
 ### 注意事项:
 
 1. 需要使github.com/siddontang/go-mysql项目的Position结构体支持时间戳
