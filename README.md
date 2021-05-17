@@ -1,5 +1,5 @@
 # goMysqlSync
-mysql->mysql多线程库表级数据同步
+golang mysql to mysql 轻量级多线程库表级数据同步
 
 ### 测试运行
 1. 设置当前binlog位置并且开始运行  
