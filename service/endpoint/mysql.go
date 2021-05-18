@@ -591,7 +591,9 @@ func (s *MysqlEndpoint) Close() {
 }
 
 func (s *MysqlEndpoint) getDdlClient(schema string) (err error) {
-	if s.ddlClient.schema != schema {
+	//判断当前数据库连接是否可用
+	ok := util.IsNil(s.ddlClient.client)
+	if s.ddlClient.schema != schema || !ok {
 		//dsn := c.MysqlUsername + ":" + c.MysqlPass + "@tcp(" + c.MysqlAddr + ")/" + "test?charset=utf8&parseTime=True&loc=Local"
 		dns := s.config.MysqlUsername + ":" + s.config.MysqlPass + "@tcp(" + s.config.MysqlAddr + ")/" + schema + "?charset=utf8&parseTime=True&loc=Local"
 		if db, err := getClient(dns); err != nil {

@@ -2,10 +2,19 @@ package util
 
 import (
 	"hash/crc32"
+	"reflect"
 	"time"
 )
 
 var G_full bool
+
+func IsNil(i interface{}) bool {
+	vi := reflect.ValueOf(i)
+	if vi.Kind() == reflect.Ptr {
+		return vi.IsNil()
+	}
+	return false
+}
 
 func StoreVal(val bool) {
 	G_full = val
