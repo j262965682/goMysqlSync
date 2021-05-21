@@ -66,7 +66,9 @@ pos.Timestamp = ev.Header.Timestamp   #新加
 
 3. mysql 的binlog格式必须是 row 模式，不支持外键约束，数据表必须有id字段类型为整型并且为主键
 
-4. 修改go-mysql支持 CREATE INDEX INDEX_1NAME3 ON `courses12`  (score) 和 DROP INDEX INDEX_1NAME3 ON `courses12`;
+4. 修改go-mysql项目的 github.com/siddontang/go-mysql/canal/sync.go
+
+支持 CREATE INDEX INDEX_1NAME3 ON `courses12`  (score) 和 DROP INDEX INDEX_1NAME3 ON `courses12`;形式的sql
 
 ```
 func parseStmt(stmt ast.StmtNode) (ns []*node) {
