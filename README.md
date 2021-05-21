@@ -66,6 +66,63 @@ pos.Timestamp = ev.Header.Timestamp   #新加
 
 3. mysql 的binlog格式必须是 row 模式，不支持外键约束，数据表必须有id字段类型为整型并且为主键
 
+4. 修改go-mysql项目的 github.com/siddontang/go-mysql/canal/sync.go
+
+支持 CREATE INDEX INDEX_1NAME3 ON `courses12`  (score) 和 DROP INDEX INDEX_1NAME3 ON `courses12`;形式的sql
+
+```
+func parseStmt(stmt ast.StmtNode) (ns []*node) {
+	switch t := stmt.(type) {
+	case *ast.RenameTableStmt:
+		for _, tableInfo := range t.TableToTables {
+			n := &node{
+				db:    tableInfo.OldTable.Schema.String(),
+				table: tableInfo.OldTable.Name.String(),
+			}
+			ns = append(ns, n)
+		}
+	case *ast.AlterTableStmt:
+		n := &node{
+			db:    t.Table.Schema.String(),
+			table: t.Table.Name.String(),
+		}
+		ns = []*node{n}
+	case *ast.DropTableStmt:
+		for _, table := range t.Tables {
+			n := &node{
+				db:    table.Schema.String(),
+				table: table.Name.String(),
+			}
+			ns = append(ns, n)
+		}
+	case *ast.CreateTableStmt:
+		n := &node{
+			db:    t.Table.Schema.String(),
+			table: t.Table.Name.String(),
+		}
+		ns = []*node{n}
+	case *ast.TruncateTableStmt:
+		n := &node{
+			db:    t.Table.Schema.String(),
+			table: t.Table.Schema.String(),
+		}
+		ns = []*node{n}
+	case *ast.CreateIndexStmt:                            #新加
+		n := &node{                                   #新加
+			db:    t.Table.Schema.String(),       #新加
+			table: t.Table.Schema.String(),       #新加
+		}                                             #新加
+		ns = []*node{n}                               #新加
+	case *ast.DropIndexStmt:                              #新加
+		n := &node{                                   #新加
+			db:    t.Table.Schema.String(),       #新加
+			table: t.Table.Schema.String(),       #新加
+		}                                             #新加
+		ns = []*node{n}	                              #新加
+	}                          
+	return
+}
+```
 
 ### 本项目基于二次开发:
 <a href="https://github.com/go-mysql-org/go-mysql" target="_blank">github.com/siddontang/go-mysql</a>
