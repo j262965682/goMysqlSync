@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="2d05ce46-ddb1-4f8b-8aaf-78501415d18a" name="Default Changelist" comment="当执行ddl时，数据库连接可能会掉线导致空指针，加入判空">
+    <list default="true" id="2d05ce46-ddb1-4f8b-8aaf-78501415d18a" name="Default Changelist" comment="修改ddl过滤规则">
       <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service/handler.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/handler.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/util/tools.go" beforeDir="false" afterPath="$PROJECT_DIR$/util/tools.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app.yml" beforeDir="false" afterPath="$PROJECT_DIR$/app.yml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -50,7 +50,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="当执行ddl时，数据库连接可能会掉线导致空指针，加入判空" />
-    <option name="LAST_COMMIT_MESSAGE" value="当执行ddl时，数据库连接可能会掉线导致空指针，加入判空" />
+    <MESSAGE value="修改ddl过滤规则" />
+    <option name="LAST_COMMIT_MESSAGE" value="修改ddl过滤规则" />
   </component>
   <component name="VgoProject">
     <integration-enabled>true</integration-enabled>

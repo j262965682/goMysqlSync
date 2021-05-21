@@ -1,7 +1,7 @@
 # 源mysql配置
 addr: xxxxxxxx:3306
-user: xxxxxxxx
-pass: xxxxxxxx
+user: xxxxxxxxxxxx
+pass: xxxxxxxxxxxx
 charset : utf8
 slave_id: 520               #slave ID
 flavor: mysql               #mysql or mariadb,默认mysql
