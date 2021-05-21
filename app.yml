@@ -1,7 +1,7 @@
 # 源mysql配置
 addr: xxxxxxxx:3306
-user: xxxxxxx
-pass: xxxxxxx
+user: xxxxxxxx
+pass: xxxxxxxx
 charset : utf8
 slave_id: 520               #slave ID
 flavor: mysql               #mysql or mariadb,默认mysql
@@ -23,7 +23,7 @@ exporter_addr: 9595         #prometheus exporter端口，默认9595
 #目标类型
 target: mysql 
 #mysql连接配置
-mysql_addrs: xxxxxxxxx:3306 #mysql地址，多个用逗号分隔 
+mysql_addrs: xxxxxxxx:3306 #mysql地址，多个用逗号分隔
 mysql_username: xxxxxxxx    #mysql用户名
 mysql_pass: xxxxxxxx        #mysql密码 
 threads: 20                 #数据回放多线程数量

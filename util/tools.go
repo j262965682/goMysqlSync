@@ -1,8 +1,11 @@
 package util
 
 import (
+	"errors"
 	"hash/crc32"
 	"reflect"
+	"regexp"
+	"strings"
 	"time"
 )
 
@@ -35,6 +38,57 @@ func Hash(str string) int {
 func TimestampToDatetime(Timestamp int64) string {
 	timeLayout := "2006-01-02 15:04:05"
 	return time.Unix(Timestamp, 0).Format(timeLayout)
+}
+
+func CaptureTableName(sql string) (tableName string, err error) {
+	var indexOfTable int
+	var indexOfOn int
+
+	sql = strings.Replace(sql, `"`, "", -1)
+	sql = strings.Replace(sql, `'`, "", -1)
+	sql = strings.Replace(sql, "`", "", -1)
+	reg := regexp.MustCompile("\\s+")
+	sqlStr := reg.ReplaceAllString(sql, " ")
+	//fmt.Println(sqlStr)
+	indexOfTable = -1
+	indexOfOn = -1
+	//取 table关键字 后面一个字符串，如果有‘.’,则取‘.’后的字符
+	array := strings.Fields(sqlStr)
+	for index, value := range array {
+		if strings.ToLower(value) == "on" {
+			indexOfOn = index
+		}
+		if strings.ToLower(value) == "table" {
+			indexOfTable = index
+			break
+		}
+	}
+
+	//fmt.Println("indexOfTable:",indexOfTable)
+	//fmt.Println("indexOfOn:",indexOfOn)
+	//fmt.Println("array:",array)
+
+	//如果没找到 table 关键字，则找 ON 关键字
+	if indexOfTable > -1 {
+		tableName = indexToTableName(indexOfTable, array)
+	} else if indexOfTable == -1 && indexOfOn > -1 {
+		tableName = indexToTableName(indexOfOn, array)
+	} else {
+		return "", errors.New("DDL解析表名报错")
+	}
+	return tableName, nil
+}
+
+func indexToTableName(index int, array []string) string {
+	tableName := array[index+1]
+	indexOfPoint := strings.Index(tableName, ".")
+	if indexOfPoint >= 0 {
+		tableName = tableName[indexOfPoint+1:]
+		if tableName[len(tableName)-1:] == ";" {
+			tableName = tableName[:len(tableName)-1]
+		}
+	}
+	return tableName
 }
 
 //func (s *MysqlEndpoint) Consume(n int,message chan []*global.RowRequest) {

@@ -48,6 +48,14 @@ func (h *handler) OnRotate(e *replication.RotateEvent) error {
 }
 
 func (h *handler) OnTableChanged(schema, table string) error {
+
+	//判断 事件归属表 是不是在监听范围内   1.参数 table_all_in 时只需要判断 schema 合适就行 2.参数为表名时，需要限定表名
+	//ruleKey := strings.ToLower(schema + ":" + table)
+	fmt.Println("OnTableChanged:", schema, table)
+	if !(global.RuleInsExist(schema+":table_all_in") || global.RuleInsExist(schema+":"+table)) {
+		return nil
+	}
+
 	//更新表的元数据
 	err := h.transfer.updateRule(schema, table)
 	if err != nil {
@@ -59,24 +67,34 @@ func (h *handler) OnTableChanged(schema, table string) error {
 func (h *handler) OnDDL(nextPos mysql.Position, queryEvent *replication.QueryEvent) error {
 	var err error
 	var is bool
-	pos := global.PosRequest{
-		Name:      nextPos.Name,
-		Pos:       nextPos.Pos,
-		Force:     true,
-		Timestamp: nextPos.Timestamp,
-	}
+	var tableName, schema, ddlSql, ruleKey string
+
 	//rr := global.RowRequestPool.Get().(*global.RowRequest)
+
+	//判断 事件归属表 是不是在监听范围内   1.参数 table_all_in 时只需要判断 schema 合适就行 2.参数为表名时，需要限定表名
+	//fmt.Println("DDL:",string(queryEvent.Query))
+	ddlSql = string(queryEvent.Query)
+	schema = string(queryEvent.Schema)
+	if tableName, err = util.CaptureTableName(ddlSql); err != nil {
+		return err
+	}
+
+	ruleKey = strings.ToLower(schema + ":" + tableName)
+	if !(global.RuleInsExist(schema+":table_all_in") || global.RuleInsExist(schema+":"+tableName)) {
+		return nil
+	}
 
 	//判断 Timestamp 在 bolt中是否存在  , 若返回为true，存在的话直接放弃
 	if is, err = storage.ExistsTimestamp(nextPos.Timestamp); !is {
+
+		pos := global.PosRequest{
+			Name:      nextPos.Name,
+			Pos:       nextPos.Pos,
+			Force:     true,
+			Timestamp: nextPos.Timestamp,
+		}
 		rr := &global.RowRequest{}
-		schema := string(queryEvent.Schema)
-		logutil.Info(schema)
-		ruleKey := global.RuleKey(schema, "")
-		ddlSql := string(queryEvent.Query)
-		//ddlSql = "use " + schema + ";" + ddlSql + ";use test"
-		//rr.SchemaStart = "use " + schema
-		//rr.SchemaEnd = "use test"
+		logutil.Info("DDL Schema-Table Key :" + ruleKey)
 		rr.Query = ddlSql
 		rr.Action = "DDL"
 		rr.RuleKey = ruleKey
