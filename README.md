@@ -124,6 +124,8 @@ func parseStmt(stmt ast.StmtNode) (ns []*node) {
 }
 ```
 
+5. 项目必须有 test 库，用来做执行跳板库，项目不会对 test 库的数据做任何操作。 
+
 ### 本项目基于二次开发:
 <a href="https://github.com/go-mysql-org/go-mysql" target="_blank">github.com/siddontang/go-mysql</a>
 
