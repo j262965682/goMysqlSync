@@ -72,7 +72,7 @@ func (h *handler) OnDDL(nextPos mysql.Position, queryEvent *replication.QueryEve
 	//rr := global.RowRequestPool.Get().(*global.RowRequest)
 
 	//判断 事件归属表 是不是在监听范围内   1.参数 table_all_in 时只需要判断 schema 合适就行 2.参数为表名时，需要限定表名
-	//fmt.Println("DDL:",string(queryEvent.Query))
+	fmt.Println("First of DDL events,show sql is:\n", string(queryEvent.Query))
 	ddlSql = string(queryEvent.Query)
 	schema = string(queryEvent.Schema)
 	if tableName, err = util.CaptureTableName(ddlSql); err != nil {
@@ -84,15 +84,19 @@ func (h *handler) OnDDL(nextPos mysql.Position, queryEvent *replication.QueryEve
 		return nil
 	}
 
-	//判断 Timestamp 在 bolt中是否存在  , 若返回为true，存在的话直接放弃
-	if is, err = storage.ExistsTimestamp(nextPos.Timestamp); !is {
+	pos := global.PosRequest{
+		Name:      nextPos.Name,
+		Pos:       nextPos.Pos,
+		Force:     true,
+		Timestamp: nextPos.Timestamp,
+	}
 
-		pos := global.PosRequest{
-			Name:      nextPos.Name,
-			Pos:       nextPos.Pos,
-			Force:     true,
-			Timestamp: nextPos.Timestamp,
-		}
+	//判断 Timestamp 在 bolt中是否存在  , 若返回为true，存在的话直接放弃
+	//var str string
+	//str,err = storage.PosToKey(pos)
+	//fmt.Println("请求的key:",str," ,err:",err)
+	if is, err = storage.ExistsTimestamp(pos); !is && err == nil {
+
 		rr := &global.RowRequest{}
 		logutil.Info("DDL Schema-Table Key :" + ruleKey)
 		rr.Query = ddlSql
@@ -102,19 +106,26 @@ func (h *handler) OnDDL(nextPos mysql.Position, queryEvent *replication.QueryEve
 		// rr 带入 Timestamp 用于判断该DDL是否执行过
 		//rr.Timestamp = pos.Timestamp
 
+		//以上部分已准备好 请求结构体
+		// 1.打开控制标识  2.输入请求
+
+		//fmt.Println("开始控制字符标识")
+		global.GlobalChangeChan.Mutex.Lock()
+		global.GlobalChangeChan.DdlControl = true
+		global.GlobalChangeChan.Mutex.Unlock()
+		//fmt.Println("DDL请求放入等待队列")
 		h.ddLRequestQueue <- rr
 
 		//logutil.Info("ddl:" + ddlSql)
 		//logutil.Info("ddl into chan of ddLRequestQueue")
 
-		global.GlobalChangeChan.Mutex.Lock()
-		global.GlobalChangeChan.DdlControl = true
-		global.GlobalChangeChan.Mutex.Unlock()
-		if global.GlobalChangeChan.DdlControl {
-			//logutil.Info("控制等待ddl执行完成")
-			<-global.GlobalChangeChan.DdlControlChan
-			//logutil.Info("ddl完成，阻塞接触")
-		}
+		<-global.GlobalChangeChan.DdlControlChan
+		//fmt.Println("控制chan返回，一次DDL结束")
+		//if !global.GlobalChangeChan.DdlControl {
+		//	//logutil.Info("控制等待ddl执行完成")
+		//	<-global.GlobalChangeChan.DdlControlChan
+		//	//logutil.Info("ddl完成，阻塞接触")
+		//}
 
 		//logutil.Info("ddl一次完成")
 		//h.ddLRequestQueue <- pos
@@ -165,9 +176,9 @@ func (h *handler) OnRow(e *canal.RowsEvent) error {
 		return nil
 	}
 
-	record := fmt.Sprintf("%v %v %s %v\n", e.Table.Schema, e.Table.Name, e.Action, e.Rows)
-	fmt.Println("OnRow", record)
-	return nil
+	//record := fmt.Sprintf("%v %v %s %v\n", e.Table.Schema, e.Table.Name, e.Action, e.Rows)
+	//fmt.Println("OnRow", record)
+	//return nil
 
 	//var requests []*global.RowRequest
 	//var rr *global.RowRequest
@@ -343,6 +354,12 @@ func (h *handler) startRequestQueueListener() {
 			//logutil.Info("监听线程循环一次")
 			//判断是否是DDL
 			if global.GlobalChangeChan.DdlControl {
+				//进入处理就关闭标识
+				fmt.Println("通过控制字符 进入循环 准备从等待队列中取请求")
+				global.GlobalChangeChan.Mutex.Lock()
+				global.GlobalChangeChan.DdlControl = false
+				global.GlobalChangeChan.Mutex.Unlock()
+
 				//logutil.Info("监听线程 into ddl")
 				select {
 				case ddlRequest := <-h.ddLRequestQueue:
@@ -356,6 +373,7 @@ func (h *handler) startRequestQueueListener() {
 					case *global.RowRequest:
 						if isMysql {
 							//DDLRequests = append(DDLRequests, ddlRequest)
+							fmt.Println("从等待队列中获取请求 放入执行队列")
 							DDLMessage <- ddlRequest
 						}
 					}

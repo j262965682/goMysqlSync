@@ -20,6 +20,7 @@ package storage
 import (
 	"errors"
 	"fmt"
+	"go-mysql-transfer/util/byteutil"
 	"path/filepath"
 	"strings"
 	"time"
@@ -30,7 +31,6 @@ import (
 	etcdlog "go.etcd.io/etcd/pkg/logutil"
 
 	"go-mysql-transfer/global"
-	"go-mysql-transfer/util/byteutil"
 	"go-mysql-transfer/util/fileutil"
 	"go-mysql-transfer/util/logutil"
 	"go-mysql-transfer/util/zkutil"
@@ -46,7 +46,9 @@ var (
 	_rowRequestBucket = []byte("RowRequest")
 	_positionBucket   = []byte("Position")
 	_fixPositionId    = byteutil.Uint64ToBytes(uint64(1))
-	_firstKey         = byteutil.Uint32ToBytes(uint32(1))
+	//_firstKey         = byteutil.Uint32ToBytes(uint32(1))
+	//file 6位  pos 14位
+	_firstKey = []byte("00000100000000000001")
 
 	_bolt     *bbolt.DB
 	_zkConn   *zk.Conn

@@ -23,9 +23,10 @@ import (
 	"github.com/siddontang/go-mysql/mysql"
 	"github.com/vmihailenco/msgpack"
 	"go-mysql-transfer/global"
-	"go-mysql-transfer/util/byteutil"
 	"go-mysql-transfer/util/logutil"
 	"go.etcd.io/bbolt"
+	"strconv"
+	"strings"
 )
 
 type boltPositionStorage struct {
@@ -91,16 +92,23 @@ func (s *boltPositionStorage) Init() error {
 	})
 }
 
+//记录 position
 func (s *boltPositionStorage) RecordPosition(pos global.PosRequest) error {
+	var err error
+	var value []byte
+	var posKey string
 	fmt.Println(pos.String())
 	return _bolt.Update(func(tx *bbolt.Tx) error {
 		bt := tx.Bucket(_positionBucket)
-		key := byteutil.Uint32ToBytes(pos.Timestamp)
-		value, err := msgpack.Marshal(pos)
+		//key := byteutil.Uint32ToBytes(pos.Timestamp)
+		if posKey, err = PosToKey(pos); err != nil {
+			return err
+		}
+		value, err = msgpack.Marshal(pos)
 		if err != nil {
 			return err
 		}
-		return bt.Put(key, value)
+		return bt.Put([]byte(posKey), value)
 	})
 }
 
@@ -108,19 +116,20 @@ func (s *boltPositionStorage) AcquirePosition() (pos mysql.Position, err error) 
 	return s.AcquirePositionBySecond(900)
 }
 
+//按当前的binlog时间戳往前推n秒取binlog位置
 func (s *boltPositionStorage) AcquirePositionBySecond(second uint32) (pos mysql.Position, err error) {
 	var lastKeyByte, lastValueByte, keyByte, valueByte []byte
-	var lastKeyuInt32, KeyuInt32 uint32
-	var position global.PosRequest
-	var firstGetPos global.PosRequest
+	var lastKeyStr, KeyStr string
+	var position, eachPosition global.PosRequest
+	var lastGetPos global.PosRequest
 	err = _bolt.View(func(tx *bbolt.Tx) error {
 		c := tx.Bucket(_positionBucket).Cursor()
 
 		//取 last Timestamp
 		lastKeyByte, lastValueByte = c.Last()
-		lastKeyuInt32 = byteutil.BytesToUint32(lastKeyByte)
-		msgpack.Unmarshal(lastValueByte, &firstGetPos)
-		logutil.Infof("获取当前的 position : %s %d %d ", firstGetPos.Name, firstGetPos.Pos, firstGetPos.Timestamp)
+		lastKeyStr = string(lastKeyByte)
+		msgpack.Unmarshal(lastValueByte, &lastGetPos)
+		logutil.Infof("获取当前的 position : %s %d %d ", lastGetPos.Name, lastGetPos.Pos, lastGetPos.Timestamp)
 
 		//判断 last 是否是空，是空则报错
 		if IsFirstNilPos(lastKeyByte) {
@@ -132,8 +141,9 @@ func (s *boltPositionStorage) AcquirePositionBySecond(second uint32) (pos mysql.
 				if IsFirstNilPos(keyByte) {
 					return errors.NotFoundf("Wrong!, Run in less than 15 minutes,Not enough position to roll back")
 				}
-				KeyuInt32 = byteutil.BytesToUint32(keyByte)
-				if lastKeyuInt32-KeyuInt32 > second {
+				KeyStr = string(keyByte)
+				msgpack.Unmarshal(valueByte, &eachPosition)
+				if lastGetPos.Timestamp-eachPosition.Timestamp > second {
 					break
 				}
 			}
@@ -148,17 +158,23 @@ func (s *boltPositionStorage) AcquirePositionBySecond(second uint32) (pos mysql.
 }
 
 func IsFirstNilPos(key []byte) bool {
-	if byteutil.BytesToUint32(key) == 1 {
+	if string(key) == "00000100000000000001" {
 		return true
 	}
 	return false
 }
 
-func ExistsTimestamp(timestamp uint32) (bool, error) {
+func ExistsTimestamp(pos global.PosRequest) (bool, error) {
 	var value []byte
-	err := _bolt.View(func(tx *bbolt.Tx) error {
+	var err error
+	var str string
+	str, err = PosToKey(pos)
+	if err != nil {
+		return false, err
+	}
+	err = _bolt.View(func(tx *bbolt.Tx) error {
 		bt := tx.Bucket(_positionBucket)
-		value = bt.Get(byteutil.Uint32ToBytes(timestamp))
+		value = bt.Get([]byte(str))
 		return nil
 	})
 	if value == nil {
@@ -166,4 +182,26 @@ func ExistsTimestamp(timestamp uint32) (bool, error) {
 	} else {
 		return true, err
 	}
+}
+
+func PosToKey(position global.PosRequest) (string, error) {
+	//file 6位补0  pos 14位补0
+	var fileLeft, posLeft, str string
+	str = "0"
+	file := strings.Split(position.Name, ".")[1]
+	pos := strconv.Itoa(int(position.Pos))
+	if len(file) > 6 || len(pos) > 14 {
+		return "", errors.New("position 数据有误 无法解析")
+	}
+	if len(file) < 6 {
+		//fmt.Println(file,"补",6-len(file),"个零")
+		fileLeft = strings.Repeat(str, 6-len(file))
+		//fmt.Println(fileLeft)
+	}
+	if len(pos) < 14 {
+		//fmt.Println(pos,"补",14-len(pos),"个零")
+		posLeft = strings.Repeat(str, 14-len(pos))
+		//fmt.Println(posLeft)
+	}
+	return fileLeft + file + posLeft + pos, nil
 }

@@ -209,7 +209,7 @@ func (s *MysqlEndpoint) Consume(n int, message chan *global.RowRequest, changeCh
 		logutil.Info("启动 ddl处理线程")
 		for row := range message {
 			//logutil.Info("ddl处理线程:" + row.Query)
-
+			//fmt.Println("从执行队列中拿到请求")
 			resp := s.toBeRespond(row)
 			//logutil.Info("开始执行sql")
 			err = s.Exec(resp)
@@ -217,9 +217,8 @@ func (s *MysqlEndpoint) Consume(n int, message chan *global.RowRequest, changeCh
 				panic(err)
 			} else {
 				//logutil.Info("ddl执行完成")
-				global.GlobalChangeChan.Mutex.Lock()
-				global.GlobalChangeChan.DdlControl = false
-				global.GlobalChangeChan.Mutex.Unlock()
+				//fmt.Println("请求执行结束")
+				//fmt.Println("空结构体放入 控制chan")
 				global.GlobalChangeChan.DdlControlChan <- struct{}{}
 			}
 			exportActionNum(row.Action, row.RuleKey)
