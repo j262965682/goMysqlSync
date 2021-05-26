@@ -68,6 +68,7 @@ func (h *handler) OnDDL(nextPos mysql.Position, queryEvent *replication.QueryEve
 	var err error
 	var is bool
 	var tableName, schema, ddlSql, ruleKey string
+	var tableInfo []string
 
 	//rr := global.RowRequestPool.Get().(*global.RowRequest)
 
@@ -75,8 +76,15 @@ func (h *handler) OnDDL(nextPos mysql.Position, queryEvent *replication.QueryEve
 	fmt.Println("First of DDL events,show sql is:\n", string(queryEvent.Query))
 	ddlSql = string(queryEvent.Query)
 	schema = string(queryEvent.Schema)
-	if tableName, err = util.CaptureTableName(ddlSql); err != nil {
+
+	//解析ddl的 tableName 和 schema
+	if tableInfo, err = util.CaptureTableName(ddlSql); err != nil {
 		return err
+	}
+	tableName = tableInfo[0]
+	//如果从DDL解析出来的 schema 不是""，那么以解析出来的为准
+	if tableInfo[1] != "" {
+		schema = tableInfo[1]
 	}
 
 	ruleKey = strings.ToLower(schema + ":" + tableName)
@@ -355,7 +363,7 @@ func (h *handler) startRequestQueueListener() {
 			//判断是否是DDL
 			if global.GlobalChangeChan.DdlControl {
 				//进入处理就关闭标识
-				fmt.Println("通过控制字符 进入循环 准备从等待队列中取请求")
+				//fmt.Println("通过控制字符 进入循环 准备从等待队列中取请求")
 				global.GlobalChangeChan.Mutex.Lock()
 				global.GlobalChangeChan.DdlControl = false
 				global.GlobalChangeChan.Mutex.Unlock()
@@ -373,7 +381,7 @@ func (h *handler) startRequestQueueListener() {
 					case *global.RowRequest:
 						if isMysql {
 							//DDLRequests = append(DDLRequests, ddlRequest)
-							fmt.Println("从等待队列中获取请求 放入执行队列")
+							//fmt.Println("从等待队列中获取请求 放入执行队列")
 							DDLMessage <- ddlRequest
 						}
 					}

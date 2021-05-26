@@ -40,7 +40,7 @@ func TimestampToDatetime(Timestamp int64) string {
 	return time.Unix(Timestamp, 0).Format(timeLayout)
 }
 
-func CaptureTableName(sql string) (tableName string, err error) {
+func CaptureTableName(sql string) (tableInfo []string, err error) {
 	var indexOfTable int
 	var indexOfOn int
 
@@ -70,25 +70,32 @@ func CaptureTableName(sql string) (tableName string, err error) {
 
 	//如果没找到 table 关键字，则找 ON 关键字
 	if indexOfTable > -1 {
-		tableName = indexToTableName(indexOfTable, array)
+		tableInfo = indexToTableName(indexOfTable, array)
+		//tableName = append(tableName,indexToTableName(indexOfTable,array))
 	} else if indexOfTable == -1 && indexOfOn > -1 {
-		tableName = indexToTableName(indexOfOn, array)
+		tableInfo = indexToTableName(indexOfOn, array)
 	} else {
-		return "", errors.New("DDL解析表名报错")
+		return nil, errors.New("DDL解析表名报错")
 	}
-	return tableName, nil
+	return tableInfo, nil
 }
 
-func indexToTableName(index int, array []string) string {
-	tableName := array[index+1]
-	indexOfPoint := strings.Index(tableName, ".")
+func indexToTableName(index int, array []string) (tableInfo []string) {
+	var tableName, schema, tableAndSchema string
+	tableAndSchema = array[index+1]
+	tableName = tableAndSchema
+	//fmt.Println(tableAndSchema)
+	indexOfPoint := strings.Index(tableAndSchema, ".")
 	if indexOfPoint >= 0 {
-		tableName = tableName[indexOfPoint+1:]
-		if tableName[len(tableName)-1:] == ";" {
-			tableName = tableName[:len(tableName)-1]
-		}
+		tableName = tableAndSchema[indexOfPoint+1:]
+		schema = tableAndSchema[:indexOfPoint]
 	}
-	return tableName
+	if tableName[len(tableName)-1:] == ";" {
+		tableName = tableName[:len(tableName)-1]
+	}
+	tableInfo = append(tableInfo, tableName)
+	tableInfo = append(tableInfo, schema)
+	return tableInfo
 }
 
 //func (s *MysqlEndpoint) Consume(n int,message chan []*global.RowRequest) {
