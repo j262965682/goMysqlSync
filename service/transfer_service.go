@@ -125,10 +125,12 @@ func (s *TransferService) run() error {
 			Timestamp: 0,
 		}
 	} else {
+		logutil.Infof("获取十五分钟前的binlog位置")
 		current, err = s.positionStorage.AcquirePosition()
 		if err != nil {
 			return err
 		}
+		logutil.Infof("重新开始同步数据")
 	}
 
 	logutil.BothInfof("transfer run from pos %s %d", current.Name, current.Pos)

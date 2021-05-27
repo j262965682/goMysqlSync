@@ -326,11 +326,17 @@ func (s *MysqlEndpoint) AfterExec(row *global.MysqlRespond, errOfAfter error) {
 			//fmt.Println("流程里的sql的参数",row.NumOfSql)
 			row.Sql = "replace" + row.Sql[6:]
 			err := s.Exec(row)
-			errOfAfter = err
+			if err != nil {
+				logutil.Error(errors.ErrorStack(errOfAfter))
+				panic(errOfAfter)
+			}
+		} else {
+			logutil.Error(errors.ErrorStack(errOfAfter))
+			panic(errOfAfter)
 		}
-		logutil.Error(errors.ErrorStack(errOfAfter))
-		logutil.Info("执行sql报错写入存储，后续待执行 ID = " + row.Table)
-		pushFailedRow(row, s.cached)
+		//logutil.Error(errors.ErrorStack(errOfAfter))
+		//logutil.Info("执行sql报错写入存储，后续待执行 ID = " + row.Table)
+		//pushFailedRow(row, s.cached)
 	} else {
 		if row.NumOfSql > 1 {
 			exportActionAdd(row.Action, row.RuleKey, row.NumOfSql)
