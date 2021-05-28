@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="2d05ce46-ddb1-4f8b-8aaf-78501415d18a" name="Default Changelist" comment="修复异库执行ddl不同步问题">
+    <list default="true" id="2d05ce46-ddb1-4f8b-8aaf-78501415d18a" name="Default Changelist" comment="如果dml sql报错就退出程序，如果数据库闪断，为了保证数据有序性，之后可以重启回滚重新同步">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app.yml" beforeDir="false" afterPath="$PROJECT_DIR$/app.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service/endpoint/mysql.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/endpoint/mysql.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service/transfer_service.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/transfer_service.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -55,7 +54,8 @@
     <MESSAGE value="修改配置文件" />
     <MESSAGE value="修复批量ddl执行有漏的问题" />
     <MESSAGE value="修复异库执行ddl不同步问题" />
-    <option name="LAST_COMMIT_MESSAGE" value="修复异库执行ddl不同步问题" />
+    <MESSAGE value="如果dml sql报错就退出程序，如果数据库闪断，为了保证数据有序性，之后可以重启回滚重新同步" />
+    <option name="LAST_COMMIT_MESSAGE" value="如果dml sql报错就退出程序，如果数据库闪断，为了保证数据有序性，之后可以重启回滚重新同步" />
   </component>
   <component name="VgoProject">
     <integration-enabled>true</integration-enabled>
