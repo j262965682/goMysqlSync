@@ -65,7 +65,8 @@
     <MESSAGE value="如果dml sql报错就退出程序，如果数据库闪断，为了保证数据有序性，之后可以重启回滚重新同步" />
     <MESSAGE value="源库账号提示" />
     <MESSAGE value="增加检测重启脚本" />
-    <option name="LAST_COMMIT_MESSAGE" value="增加检测重启脚本" />
+    <MESSAGE value="增加参数清理db文件数据 调整定点开始同步的逻辑" />
+    <option name="LAST_COMMIT_MESSAGE" value="增加参数清理db文件数据 调整定点开始同步的逻辑" />
   </component>
   <component name="VgoProject">
     <integration-enabled>true</integration-enabled>
