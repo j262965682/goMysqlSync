@@ -84,8 +84,8 @@ type Config struct {
 
 	RuleConfigs []*Rule `yaml:"rule"`
 
-	LoggerConfig *logutil.LoggerConfig `yaml:"logger"` // 日志配置
-	DbDays       int                   `yaml:"dbDays"` //db文件数据的保留时间  默认30天
+	LoggerConfig *logutil.LoggerConfig `yaml:"logger"`  // 日志配置
+	DbDays       int                   `yaml:"db_days"` //db文件数据的保留时间  默认30天
 
 	Label          string `yaml:"label"`           // 启用prometheus exporter tag
 	EnableExporter bool   `yaml:"enable_exporter"` // 启用prometheus exporter，默认false
