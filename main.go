@@ -121,7 +121,7 @@ func main() {
 		}
 		f := others[0]
 		p := others[1]
-		timestampStr := others[3]
+		timestampStr := others[2]
 
 		if !strings.HasPrefix(f, "mysql-bin.") {
 			println("error: The parameter File must be like: mysql-bin.000001")
