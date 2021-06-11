@@ -84,3 +84,8 @@ func (s *etcdPositionStorage) AcquirePosition() (pos mysql.Position, err error) 
 func (s *etcdPositionStorage) AcquirePositionBySecond(second uint32) (pos mysql.Position, err error) {
 	return pos, err
 }
+
+func (s *etcdPositionStorage) DeletePositionBySecond(second uint32) (err error) {
+	//TODO
+	return nil
+}

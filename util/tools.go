@@ -2,6 +2,7 @@ package util
 
 import (
 	"errors"
+	"go-mysql-transfer/global"
 	"hash/crc32"
 	"reflect"
 	"regexp"
@@ -10,6 +11,7 @@ import (
 )
 
 var G_full bool
+var G_pos global.PosRequest
 
 func IsNil(i interface{}) bool {
 	vi := reflect.ValueOf(i)
@@ -19,8 +21,13 @@ func IsNil(i interface{}) bool {
 	return false
 }
 
+//存储 full 标识
 func StoreVal(val bool) {
 	G_full = val
+}
+
+func StoreNewPos(pos global.PosRequest) {
+	G_pos = pos
 }
 
 func Hash(str string) int {

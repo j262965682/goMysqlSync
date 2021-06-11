@@ -33,6 +33,7 @@ type PositionStorage interface {
 	RecordPosition(pos global.PosRequest) error
 	AcquirePosition() (pos mysql.Position, err error)
 	AcquirePositionBySecond(second uint32) (pos mysql.Position, err error)
+	DeletePositionBySecond(second uint32) (err error)
 }
 
 func NewPositionStorage(conf *global.Config) PositionStorage {

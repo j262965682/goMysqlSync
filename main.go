@@ -40,12 +40,13 @@ import (
 )
 
 var (
-	helpFlag     bool
-	cfgPath      string
-	stockFlag    bool
-	positionFlag bool
-	statusFlag   bool
-	full         bool
+	helpFlag      bool
+	cfgPath       string
+	stockFlag     bool
+	positionFlag  bool
+	statusFlag    bool
+	deletePosFlag bool
+	full          bool
 )
 
 func init() {
@@ -53,14 +54,17 @@ func init() {
 	flag.StringVar(&cfgPath, "config", "app.yml", "application config file")
 
 	//按表查数据导入
-	flag.BoolVar(&stockFlag, "stock", false, "stock data import")
+	//flag.BoolVar(&stockFlag, "stock", false, "stock data import")
 
-	//设置当前binlog位置并且开始运行   go run main.go -position mysql-bin.000469 324783 1619431429
+	//设置当前binlog位置并且开始运行    go run main.go -position mysql-bin.000469 324783 1619431429
 	flag.BoolVar(&positionFlag, "position", false, "set dump position")
-	//查询当前binlog位置   go run main.go -status 900
+	//查询当前binlog位置              go run main.go -status 900
 	flag.BoolVar(&statusFlag, "status", false, "Query the position of many seconds age,This position is the first one greater than yours seconds.")
-	//是否同步表结构       go run main.go -full
+	//是否同步表结构                   go run main.go -full
 	flag.BoolVar(&full, "full", false, "sync table struct or not")
+	//position data 日志过大，清理data    go run main.go -deletepos
+	flag.BoolVar(&deletePosFlag, "deletepos", false, "sync table struct or not")
+
 	flag.Usage = usage
 }
 
@@ -107,6 +111,7 @@ func main() {
 	}
 
 	if positionFlag {
+		//go run main.go -position mysql-bin.000469 324783 1619431429
 		var err error
 		var pp, timestamp uint32
 		others = flag.Args()
@@ -135,27 +140,27 @@ func main() {
 			return
 		}
 
-		ps := storage.NewPositionStorage(global.Cfg())
+		//ps := storage.NewPositionStorage(global.Cfg())
 		pos := global.PosRequest{
 			Name:      f,
 			Pos:       pp,
 			Timestamp: timestamp,
 		}
-		err = ps.RecordPosition(pos)
+
+		util.StoreNewPos(pos)
 		fmt.Printf("The current dump position is : %s, %d, %d \n", f, pp, timestamp)
-		return
 	}
 
-	if stockFlag {
-		transfer := service.TransferServiceIns()
-		stock := service.NewStockService(transfer)
-		err = stock.Run()
-		if err != nil {
-			println(errors.ErrorStack(err))
-		}
-		stock.Close()
-		return
-	}
+	//if stockFlag {
+	//	transfer := service.TransferServiceIns()
+	//	stock := service.NewStockService(transfer)
+	//	err = stock.Run()
+	//	if err != nil {
+	//		println(errors.ErrorStack(err))
+	//	}
+	//	stock.Close()
+	//	return
+	//}
 	//开始上传 promethus 监控数据
 	global.StartMonitor()
 

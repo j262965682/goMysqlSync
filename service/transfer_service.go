@@ -124,6 +124,10 @@ func (s *TransferService) run() error {
 			Pos:       0,
 			Timestamp: 0,
 		}
+	} else if util.G_pos.Timestamp > 0 {
+		current.Timestamp = util.G_pos.Timestamp
+		current.Pos = util.G_pos.Pos
+		current.Name = util.G_pos.Name
 	} else {
 		logutil.Infof("获取十五分钟前的binlog位置")
 		current, err = s.positionStorage.AcquirePosition()

@@ -357,6 +357,9 @@ func (h *handler) startRequestQueueListener() {
 
 		isMysql := h.transfer.config.IsMysql()
 
+		//清理db文件
+		go deleteDBPosition(h)
+
 		for {
 			//DDLSavePos := false
 			//logutil.Info("监听线程循环一次")
@@ -493,6 +496,25 @@ func (h *handler) startRequestQueueListener() {
 //func SavePosition(pos mysql.Position) error {
 //
 //}
+
+func deleteDBPosition(h *handler) {
+	day := h.transfer.config.DbDays
+	if day == 0 {
+		day = 30
+	}
+
+	ticker := time.NewTicker(time.Hour * 12)
+	defer ticker.Stop()
+	//取30天前的秒级时间戳
+	for {
+		select {
+		case <-ticker.C:
+			timeUnix := time.Now().Unix() - 60*60*24
+			err := h.transfer.positionStorage.DeletePositionBySecond(uint32(timeUnix))
+			logutil.Errorf("DB文件数据清理失败: %v", err)
+		}
+	}
+}
 
 func getIDIndex(e *canal.RowsEvent) int {
 	//取行id

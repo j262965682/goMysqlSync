@@ -96,3 +96,8 @@ func (s *zkPositionStorage) AcquirePosition() (pos mysql.Position, err error) {
 func (s *zkPositionStorage) AcquirePositionBySecond(second uint32) (pos mysql.Position, err error) {
 	return pos, err
 }
+
+func (s *zkPositionStorage) DeletePositionBySecond(second uint32) (err error) {
+	//TODO
+	return nil
+}
