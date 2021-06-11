@@ -129,7 +129,7 @@ func parseStmt(stmt ast.StmtNode) (ns []*node) {
 6. 源库需要的账号权限 
 
    ```
-   GRANT SELECT, PROCESS, REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO 'xxx'@'%' IDENTIFIED BY 'xxx';
+   GRANT SELECT, PROCESS, REPLICATION SLAVE, REPLICATION CLIENT, RELOAD ON *.* TO 'xxx'@'%' IDENTIFIED BY 'xxx';
 
    FLUSH  PRIVILEGES;
    ```

@@ -167,7 +167,7 @@ func (s *boltPositionStorage) DeletePositionBySecond(second uint32) (err error) 
 		msgpack.Unmarshal(value, &pos)
 		if pos.Timestamp < second {
 			err = c.Delete()
-			fmt.Println("delete position timestamp:", pos.Timestamp)
+			//fmt.Println("delete position timestamp:", pos.Timestamp)
 			if err != nil {
 				return err
 			}
@@ -177,7 +177,7 @@ func (s *boltPositionStorage) DeletePositionBySecond(second uint32) (err error) 
 			msgpack.Unmarshal(value, &pos)
 			if pos.Timestamp < second {
 				err = c.Delete()
-				fmt.Println("delete position timestamp:", pos.Timestamp)
+				//fmt.Println("delete position timestamp:", pos.Timestamp)
 				if err != nil {
 					return err
 				}
