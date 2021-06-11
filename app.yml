@@ -9,6 +9,7 @@ mysqldump: /usr/local/mysql-5.7.31/bin/mysqldump
 set-gtid-purged: OFF
 
 #系统相关配置
+db_days: 30
 data_dir: /usr/local/goMysqlSync #应用产生的数据存放地址，包括日志、缓存数据等，默认当前运行目录下store文件夹
 logger:
   file_name: system.log
