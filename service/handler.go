@@ -504,14 +504,22 @@ func deleteDBPosition(h *handler) {
 	}
 
 	ticker := time.NewTicker(time.Hour * 12)
+	//ticker := time.NewTicker(time.Minute * 10)
 	defer ticker.Stop()
 	//取30天前的秒级时间戳
 	for {
 		select {
 		case <-ticker.C:
-			timeUnix := time.Now().Unix() - 60*60*24
+			fmt.Println("出发定时器")
+			timeUnix := time.Now().Unix() - 60*60*24*int64(day)
+			//timeUnix := time.Now().Unix() - 180
 			err := h.transfer.positionStorage.DeletePositionBySecond(uint32(timeUnix))
-			logutil.Errorf("DB文件数据清理失败: %v", err)
+			if err != nil {
+				logutil.Errorf("DB文件数据清理失败: %v", err)
+			} else {
+				logutil.Info("DB文件数据完成一次清理")
+			}
+
 		}
 	}
 }

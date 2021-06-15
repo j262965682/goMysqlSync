@@ -160,29 +160,35 @@ func (s *boltPositionStorage) AcquirePositionBySecond(second uint32) (pos mysql.
 //为什么减少日志文件大小 批量删除日志数据   删除时间戳之前的数据
 func (s *boltPositionStorage) DeletePositionBySecond(second uint32) (err error) {
 	var value []byte
-	var pos global.PosRequest
+	var pos *global.PosRequest
 	return _bolt.Update(func(tx *bbolt.Tx) error {
 		c := tx.Bucket(_positionBucket).Cursor()
 		_, value = c.First()
 		msgpack.Unmarshal(value, &pos)
+
+		//fmt.Printf("first timestamp is %d\n",pos.Timestamp)
+
 		if pos.Timestamp < second {
 			err = c.Delete()
-			//fmt.Println("delete position timestamp:", pos.Timestamp)
+			//fmt.Println("delete first timestamp:", pos.Timestamp)
 			if err != nil {
 				return err
 			}
-		}
-		for {
-			_, value = c.Next()
-			msgpack.Unmarshal(value, &pos)
-			if pos.Timestamp < second {
-				err = c.Delete()
-				//fmt.Println("delete position timestamp:", pos.Timestamp)
-				if err != nil {
-					return err
+
+			for {
+				_, value = c.Next()
+				msgpack.Unmarshal(value, &pos)
+				//fmt.Println("get timestamp:", pos.Timestamp)
+				if pos.Timestamp < second {
+					err = c.Delete()
+					//fmt.Println("delete timestamp:", pos.Timestamp)
+					//time.Sleep(time.Second * 1)
+					if err != nil {
+						return err
+					}
+				} else {
+					break
 				}
-			} else {
-				break
 			}
 		}
 		return err
