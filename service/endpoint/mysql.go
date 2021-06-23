@@ -347,7 +347,7 @@ func (s *MysqlEndpoint) AfterExec(row *global.MysqlRespond, errOfAfter error) {
 	if row.Timestamp > 0 {
 		//SQl执行后 上报当前sql的时间戳
 		global.ExecuteSQLTimestamp = row.Timestamp
-		logutil.Info("binlog延迟(s)" + string(global.ExecuteSQLTimestamp))
+		//logutil.Info("binlog延迟(s)" + string(global.ExecuteSQLTimestamp))
 	}
 }
 func (s *MysqlEndpoint) Exec(resp *global.MysqlRespond) (err error) {

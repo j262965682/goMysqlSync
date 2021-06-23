@@ -510,7 +510,7 @@ func deleteDBPosition(h *handler) {
 	for {
 		select {
 		case <-ticker.C:
-			fmt.Println("出发定时器")
+			//fmt.Println("出发定时器")
 			timeUnix := time.Now().Unix() - 60*60*24*int64(day)
 			//timeUnix := time.Now().Unix() - 180
 			err := h.transfer.positionStorage.DeletePositionBySecond(uint32(timeUnix))
