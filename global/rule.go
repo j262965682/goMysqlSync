@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 the original author(https://github.com/wj596)
+ Copyright 2020-2021 the original author(https://github.com/wj596)
  *
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * </p>
- */
+*/
 package global
 
 import (
