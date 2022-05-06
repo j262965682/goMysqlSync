@@ -5,6 +5,8 @@ import (
 	"github.com/juju/errors"
 	"github.com/mattn/go-colorable"
 	"github.com/siddontang/go-mysql/canal"
+	"github.com/siddontang/go-mysql/mysql"
+	"github.com/siddontang/go-mysql/schema"
 	"github.com/vmihailenco/msgpack"
 	"go-mysql-transfer/global"
 	"go-mysql-transfer/storage"
@@ -16,8 +18,30 @@ import (
 	"gorm.io/gorm/logger"
 	"log"
 	"strings"
+	"sync"
 	"time"
 )
+
+var GFullProgress = FullOfProgress{}
+var InitPos = mysql.Position{}
+
+type FullOfProgress struct {
+	Status     bool                   //全量同步是否完成
+	Table      map[string]TableStatus // 每个表的行数，string为表的 schema_name.table_name
+	AllRow     int64                  // 总行数
+	CurrentRow int64                  // 当前已同步的行数
+	Lock       sync.Mutex             //线程锁
+}
+
+type TableStatus struct {
+	Schema  string
+	Name    string
+	Rows    int64  // 每个表的行数
+	Done    bool   // 每个表是否完成全量
+	Sql     string //建表语句
+	Columns []schema.TableColumn
+	MaxID   int64 //id最大值
+}
 
 type MysqlEndpoint struct {
 	config *global.Config
@@ -106,87 +130,104 @@ func (s *MysqlEndpoint) SyncTableStructure() error {
 	var masterDb *gorm.DB
 	var err error
 	var count int64
-	var total int64
-	var length int64
-	masterDb, err = s.GetMasterClient()
-	tableList := make([]global.Tables, 0)
-	tablesList := make([]string, 0)
-	tablesNoSchemaList := make([]string, 0)
 
-	//同步库信息
+	var tableDesc global.TableDesc
+	masterDb, err = s.GetMasterClient()
+	tableList := make([]global.Tables, 0) //映射sql的结果集
+
+	tableDump := make(map[string]TableStatus)
+	createSchemas := make([]string, 0)
+	// 先 检测是否有id主键 再 拉取建库和建表sql 再执行建库和建表sql
+	// 拉取 建库和建表sql
 	for _, rule := range global.RuleInsList() {
-		schema := rule.Schema
-		createDatabaseSql := "SHOW CREATE DATABASE " + strings.ToLower(schema) + ";"
-		var databaseDesc global.DatabaseDesc
-		masterDb.Raw(createDatabaseSql).Scan(&databaseDesc)
-		//sql := "CREATE DATABASE IF NOT EXISTS "+ schema +";"
-		CreateDatabaseNotExistsSql := databaseDesc.CreateDatabase[0:16] + "IF NOT EXISTS " + databaseDesc.CreateDatabase[15:]
+		// 先把加入 库列表
+		if result := IsContain(createSchemas, rule.Schema); !result {
+			createSchemas = append(createSchemas, rule.Schema)
+		}
+		// 某个库下的所有表
+		if rule.Table == "table_all_in" {
+			// 获取全库的表列表
+			masterDb.Table("information_schema.tables").Select("table_name").Where("TABLE_SCHEMA = ?", rule.Schema).Scan(&tableList)
+			logutil.BothInfof("获取 %s 库表信息", rule.Schema)
+			for _, table := range tableList {
+				schemaTable := rule.Schema + "." + table.TableName
+				// 检查表是否有 id主键
+				masterDb.Table("information_schema.COLUMNS").Where("TABLE_SCHEMA = ? and table_name = ? and COLUMN_NAME = 'id' and COLUMN_KEY = 'PRI'", rule.Schema, table.TableName).Count(&count)
+				if count == 0 {
+					logutil.Errorf(rule.Schema + "." + table.TableName + "没有主键id")
+					panic(rule.Schema + "." + table.TableName + "没有主键id")
+				}
+				// 拉取 create table SQL
+				sql := "SHOW CREATE TABLE " + schemaTable + ";"
+				masterDb.Raw(sql).Scan(&tableDesc)
+				// 获取表的行数
+				masterDb.Table(schemaTable).Count(&count)
+
+				tableDump[schemaTable] = TableStatus{
+					Schema: rule.Schema,
+					Name:   table.TableName,
+					Rows:   count,
+					Done:   false,
+					Sql:    tableDesc.CreateTable,
+				}
+			}
+		} else {
+			logutil.BothInfof("获取 %s.%s 表信息", rule.Schema, rule.Table)
+			// 单表
+			schemaTable := rule.Schema + "." + rule.Table
+			// 检查表是否有 id主键
+			masterDb.Table("information_schema.COLUMNS").Where(`TABLE_SCHEMA = ? and table_name = ? and COLUMN_NAME = 'id'`, rule.Schema, rule.Table).Count(&count)
+			if count == 0 {
+				logutil.Error(rule.Schema + "." + rule.Table + "没有主键id" + err.Error())
+				return err
+			}
+			// 拉取 create table SQL
+			sql := "SHOW CREATE TABLE " + schemaTable + ";"
+			masterDb.Raw(sql).Scan(&tableDesc)
+			// 获取表的行数
+			masterDb.Table(schemaTable).Count(&count)
+
+			tableDump[schemaTable] = TableStatus{
+				Schema: rule.Schema,
+				Name:   rule.Table,
+				Rows:   count,
+				Done:   false,
+				Sql:    tableDesc.CreateTable,
+			}
+		}
+	}
+
+	GFullProgress.Table = tableDump
+
+	// 执行建库
+	for _, schema := range createSchemas {
+		logutil.BothInfof("新建 %s 库", schema)
+		// CREATE DATABASE IF NOT EXISTS mytestdb CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_general_ci';
+		CreateDatabaseNotExistsSql := `CREATE DATABASE IF NOT EXISTS ` + strings.ToLower(schema) + ` CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_general_ci';`
 		if db := s.client.Exec(CreateDatabaseNotExistsSql); db.Error != nil {
 			return db.Error
 		}
 	}
+
 	fkOffSql := "SET FOREIGN_KEY_CHECKS = 0;"
 	fkOnSql := "SET FOREIGN_KEY_CHECKS = 1;"
+
 	//先关闭外键约束
 	if db := s.client.Exec(fkOffSql); db.Error != nil {
 		return db.Error
 	}
-	//同步表结构
-	for _, rule := range global.RuleInsList() {
-		logutil.BothInfof("开始获取表结构信息")
-		if rule.Table == "table_all_in" {
-			masterDb.Table("information_schema.tables").Select("table_name").Where("TABLE_SCHEMA = ?", rule.Schema).Scan(&tableList)
-			logutil.BothInfof("获取整个库表信息 %s", rule.Schema)
-			for _, table := range tableList {
-				//sql :="show create table " + table.TableName
-				tablesList = append(tablesList, rule.Schema+"."+table.TableName)
-				tablesNoSchemaList = append(tablesNoSchemaList, table.TableName)
-			}
-			length = length + int64(len(tableList))
-			s.client.Table("information_schema.tables").Where("TABLE_SCHEMA = ? and table_name IN ?", rule.Schema, tablesNoSchemaList).Count(&count)
-			total += count
-			count = 0
-			tablesNoSchemaList = tablesNoSchemaList[0:0]
-		} else {
-			logutil.BothInfof("获取单个表信息 %s %s", rule.Schema, rule.Table)
-			tablesList = append(tablesList, rule.Schema+"."+rule.Table)
-			s.client.Table("information_schema.tables").Where("TABLE_SCHEMA = ? and table_name = ?", rule.Schema, rule.Table).Count(&count)
-			length += 1
-			//fmt.Println(count)
-			if count != 0 {
-				total++
-			}
-			count = 0
+	// 新建表
+	for schemaTable, status := range GFullProgress.Table {
+		useSql := "use " + status.Schema + ";"
+		if err = s.client.Exec(useSql).Error; err != nil {
+			logutil.Error("表结构初始化出错: use  ;" + status.Schema + ";" + err.Error())
+			return err
 		}
-	}
-	//fmt.Println(total,len(tablesList))
-	fmt.Println(total, length)
-	if total == length {
-		logutil.Info("表结构已经同步，跳过")
-		return nil
-	}
-	if total > 0 {
-		return errors.New("部分表已存在")
-	} else {
-		logutil.Info("开始初始化表结构")
-		for _, table := range tablesList {
-			sql := "SHOW CREATE TABLE " + table + ";"
-			var tableDesc global.TableDesc
-			masterDb.Raw(sql).Scan(&tableDesc)
-			//createTablesList[table] = tableDesc.CreateTable
-			//useSql := "use "+
-			schema := strings.Split(table, ".")[0]
-			useSql := "use " + schema + ";"
-			if err = s.client.Exec(useSql).Error; err != nil {
-				logutil.Error("表结构初始化出错: use  ;" + schema + ";" + err.Error())
-				return err
-			}
-			createSql := tableDesc.CreateTable
-			logutil.Infof("表结构初始化: " + table + ":" + createSql)
-			if err = s.client.Exec(createSql).Error; err != nil {
-				logutil.Error("表结构初始化出错: create table " + table + ";" + err.Error())
-				return err
-			}
+		createSql := status.Sql
+		logutil.Infof("表结构初始化: " + schemaTable + ":" + createSql)
+		if err = s.client.Exec(createSql).Error; err != nil {
+			logutil.Error("表结构初始化出错: create table " + schemaTable + ";" + err.Error())
+			return err
 		}
 	}
 	//先开启外键约束
@@ -200,7 +241,7 @@ func (s *MysqlEndpoint) Ping() error {
 	return s.client.Exec("select 1").Error
 }
 
-//消费binlog事件
+// Consume 消费 binlog 事件
 func (s *MysqlEndpoint) Consume(n int, message chan *global.RowRequest, changeChan global.ChangeChan) {
 	var err error
 	//判断是不是DDL，如果是100 则是DDL
@@ -405,6 +446,15 @@ func (s *MysqlEndpoint) ManyExec(resp *global.MysqlRespond) (err error) {
 		err = s.client.Exec(resp.Sql, resp.ManyId...).Error
 	}
 	return
+}
+
+func (s *MysqlEndpoint) StockExecSql(sql string, valuesList []interface{}) (int64, error) {
+	db := s.client.Exec(sql, valuesList...)
+	if db.Error != nil {
+		logutil.Error(errors.ErrorStack(db.Error))
+		return 0, db.Error
+	}
+	return db.RowsAffected, nil
 }
 
 func (s *MysqlEndpoint) Stock(rows []*global.RowRequest) int64 {
@@ -629,4 +679,13 @@ func getClient(dsn string) (*gorm.DB, error) {
 	// SetConnMaxLifetime sets the maximum amount of time a connection may be reused.
 	sqlDB.SetConnMaxLifetime(time.Hour)
 	return db, err
+}
+
+func IsContain(items []string, item string) bool {
+	for _, eachItem := range items {
+		if eachItem == item {
+			return true
+		}
+	}
+	return false
 }

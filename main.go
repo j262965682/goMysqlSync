@@ -61,7 +61,7 @@ func init() {
 	//查询当前binlog位置              go run main.go -status 900
 	flag.BoolVar(&statusFlag, "status", false, "Query the position of many seconds age,This position is the first one greater than yours seconds.")
 	//是否同步表结构                   go run main.go -full
-	flag.BoolVar(&full, "full", false, "sync table struct or not")
+	flag.BoolVar(&full, "full", true, "sync table struct or not")
 	//position data 日志过大，清理data    go run main.go -deletepos
 	flag.BoolVar(&deletePosFlag, "deletepos", false, "sync table struct or not")
 

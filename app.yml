@@ -1,20 +1,19 @@
 # 源mysql配置
-addr: xxxxxxxx:3306
-user: xxxxxxx
-pass: xxxxxxx
+addr: 10.110.2.87:3306
+user: user_sync
+pass: user_sync
 charset : utf8
 slave_id: 520               #slave ID
 flavor: mysql               #mysql or mariadb,默认mysql
-mysqldump: /usr/local/mysql-5.7.31/bin/mysqldump
-set-gtid-purged: OFF
+mysqldump:                  # /usr/local/mysql-5.7.31/bin/mysqldump
 
 #系统相关配置
 db_days: 30
-data_dir: /usr/local/goMysqlSync #应用产生的数据存放地址，包括日志、缓存数据等，默认当前运行目录下store文件夹
+data_dir: D:\GOPROJECT1\goMysqlSync               #/usr/local/goMysqlSync #应用产生的数据存放地址，包括日志、缓存数据等，默认当前运行目录下store文件夹
 logger:
   file_name: system.log
-  level: debug              #日志级别；支持：debug|info|warn|error，默认info
-  store: /usr/local/goMysqlSync
+  level: debug  #日志级别；支持：debug|info|warn|error，默认info
+  store: D:\GOPROJECT1\goMysqlSync     #/usr/local/goMysqlSync
 
 #prometheus相关配置
 label: test                 #prometheus exporter的tag
@@ -24,15 +23,18 @@ exporter_addr: 9595         #prometheus exporter端口，默认9595
 #目标类型
 target: mysql
 #mysql连接配置
-mysql_addrs: xxxxxxxx:3306 #mysql地址，多个用逗号分隔
-mysql_username: xxxxxxxx    #mysql用户名
-mysql_pass: xxxxxxxx        #mysql密码
-threads: 20                 #数据回放多线程数量
+mysql_addrs: 10.110.2.90:3306 #mysql地址，多个用逗号分隔
+mysql_username: user_sync     #mysql用户名
+mysql_pass: user_sync         #mysql密码
+threads: 20                   #增量数据回放多线程数量
+record_rows: 255              #增量数据回放每批次大小
+dump_threads: 10              #全量同步线程数
+dump_record_rows: 1000        #全量同步每批次大小
 
 #规则配置
 rule:
   -
-    schema: test            #数据库名称
+    schema: db_budget        #数据库名称
     table: table_all_in     #表名称 # table_all_in 表示 全部表
     column_underscore_to_camel: true #列名称下划线转驼峰,默认为false
     value_encoder: json     #值编码，支持json、kv-commas、v-commas；默认为json；json形如：{"id":123,"name":"wangjie"} 、kv-commas形如：id=123,name="wangjie"、v-commas形如：123,wangjie

@@ -63,13 +63,19 @@ func (s *TransferService) initialize() error {
 		return errors.Trace(err)
 	}
 
-	// 初始化 endpoint   Start 里面会根据标识是否同步表结构
+	// 初始化 endpoint   Start 里面会根据标识是否同步表结构、获取所有表的行数
 	_endpoint := endpoint.NewEndpoint(s.config, s.canal)
 	if err := _endpoint.Start(); err != nil {
 		return errors.Trace(err)
 	}
 	global.SetDestinationState(global.MetricsStateOK)
 	s.endpoint = _endpoint
+
+	// start()中已经检测和同步了表结构 接下来 全量同步数据，全量数据按表的行数来分批，每批的量由 参数 控制
+	stockService := NewStockService(s)
+	if err := stockService.Run(); err != nil {
+		return errors.Trace(err)
+	}
 
 	s.initDumper()
 
@@ -118,17 +124,15 @@ func (s *TransferService) run() error {
 	var current mysql.Position
 	var err error
 	if util.G_full {
-		//新建一个初始 position
-		current = mysql.Position{
-			Name:      "",
-			Pos:       0,
-			Timestamp: 0,
-		}
+		// 新的全量加增量同步 读取源端 当前 position
+		current = endpoint.InitPos
 	} else if util.G_pos.Timestamp > 0 {
+		// 指定 position 开始增量同步，position 是从 bolt 里面获取的 有Timestamp字段
 		current.Timestamp = util.G_pos.Timestamp
 		current.Pos = util.G_pos.Pos
 		current.Name = util.G_pos.Name
 	} else {
+		// 掉线后，重新开启同步，不提供 position，自动从 bolt 里面获取
 		logutil.Infof("获取十五分钟前的binlog位置")
 		current, err = s.positionStorage.AcquirePosition()
 		if err != nil {

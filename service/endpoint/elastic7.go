@@ -389,3 +389,8 @@ func (s *Elastic7Endpoint) Close() {
 		s.client.Stop()
 	}
 }
+
+func (s *Elastic7Endpoint) StockExecSql(sql string, valuesList []interface{}) (int64, error) {
+	// TODO
+	return 0, nil
+}

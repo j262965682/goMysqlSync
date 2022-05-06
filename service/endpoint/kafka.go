@@ -324,3 +324,8 @@ func (s *KafkaEndpoint) Close() {
 		s.client.Close()
 	}
 }
+
+func (s *KafkaEndpoint) StockExecSql(sql string, valuesList []interface{}) (int64, error) {
+	// TODO
+	return 0, nil
+}

@@ -1,23 +1,43 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="ALL" />
+  </component>
   <component name="ChangeListManager">
     <list default="true" id="2d05ce46-ddb1-4f8b-8aaf-78501415d18a" name="Default Changelist" comment="修正">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app.yml" beforeDir="false" afterPath="$PROJECT_DIR$/app.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/global/config.go" beforeDir="false" afterPath="$PROJECT_DIR$/global/config.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/global/model.go" beforeDir="false" afterPath="$PROJECT_DIR$/global/model.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/service/endpoint/elastic6.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/endpoint/elastic6.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/service/endpoint/elastic7.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/endpoint/elastic7.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/service/endpoint/endpoint.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/endpoint/endpoint.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/service/endpoint/kafka.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/endpoint/kafka.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/service/endpoint/mongo.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/endpoint/mongo.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/service/endpoint/mysql.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/endpoint/mysql.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service/handler.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/handler.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/service/endpoint/mysql_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/endpoint/mysql_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/service/endpoint/rabbit.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/endpoint/rabbit.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/service/endpoint/redis.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/endpoint/redis.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/service/endpoint/rocket.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/endpoint/rocket.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/service/stock_service.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/stock_service.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/service/transfer_service.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/transfer_service.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/bolt_position_storage.go" beforeDir="false" afterPath="$PROJECT_DIR$/storage/bolt_position_storage.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="GOROOT" url="file://C:/Go" />
+  <component name="GOROOT" url="file://$USER_HOME$/go/go1.17.5" />
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="GoLibraries">
     <option name="indexEntireGoPath" value="false" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
   </component>
   <component name="ProjectId" id="1shZwoIfMc8MGPThY1nR2eHqDZT" />
   <component name="ProjectViewState">
@@ -28,10 +48,63 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="configurable..is.expanded" value="false" />
+    <property name="configurable.GoLibrariesConfigurable.is.expanded" value="true" />
+    <property name="go.format.on.save.advertiser.fired" value="true" />
+    <property name="go.formatter.settings.were.checked" value="true" />
     <property name="go.import.settings.migrated" value="true" />
+    <property name="go.modules.go.list.on.any.changes.was.set" value="true" />
     <property name="go.sdk.automatically.set" value="true" />
     <property name="go.tried.to.enable.integration.vgo.integrator" value="true" />
+    <property name="go.watchers.conflict.with.on.save.actions.check.performed" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="settings.editor.selected.configurable" value="com.goide.configuration.GoLibrariesConfigurableProvider" />
+  </component>
+  <component name="RunManager" selected="Go Build.go build go-mysql-transfer">
+    <configuration default="true" type="GoApplicationRunConfiguration" factoryName="Go Application">
+      <module name="goMysqlSync" />
+      <working_directory value="$PROJECT_DIR$" />
+      <kind value="FILE" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$" />
+      <method v="2" />
+    </configuration>
+    <configuration name="go build go-mysql-transfer" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
+      <module name="goMysqlSync" />
+      <working_directory value="$PROJECT_DIR$" />
+      <kind value="PACKAGE" />
+      <package value="go-mysql-transfer" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$/main.go" />
+      <method v="2" />
+    </configuration>
+    <configuration name="TestIsContain in go-mysql-transfer/service/endpoint" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="goMysqlSync" />
+      <working_directory value="$PROJECT_DIR$/service/endpoint" />
+      <root_directory value="$PROJECT_DIR$" />
+      <kind value="PACKAGE" />
+      <package value="go-mysql-transfer/service/endpoint" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$" />
+      <framework value="gotest" />
+      <pattern value="^\QTestIsContain\E$" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="GoTestRunConfiguration" factoryName="Go Test">
+      <module name="goMysqlSync" />
+      <working_directory value="$PROJECT_DIR$" />
+      <kind value="DIRECTORY" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$" />
+      <framework value="gotest" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Go Build.go build go-mysql-transfer" />
+        <item itemvalue="Go Test.TestIsContain in go-mysql-transfer/service/endpoint" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TypeScriptGeneratedFilesManager">
@@ -47,7 +120,6 @@
         </entry>
       </map>
     </option>
-    <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="当执行ddl时，数据库连接可能会掉线导致空指针，加入判空" />
@@ -65,5 +137,16 @@
   </component>
   <component name="VgoProject">
     <integration-enabled>true</integration-enabled>
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/service/stock_service.go</url>
+          <line>256</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>

@@ -116,10 +116,12 @@ func (s *boltPositionStorage) AcquirePosition() (pos mysql.Position, err error) 
 	return s.AcquirePositionBySecond(900)
 }
 
-//按当前的binlog时间戳往前推n秒取binlog位置
+// 按当前的binlog时间戳往前推n秒取binlog位置
 func (s *boltPositionStorage) AcquirePositionBySecond(second uint32) (pos mysql.Position, err error) {
 	var lastKeyByte, lastValueByte, keyByte, valueByte []byte
-	var lastKeyStr, KeyStr string
+	//var lastKeyStr string
+	//var KeyStr string
+
 	var position, eachPosition global.PosRequest
 	var lastGetPos global.PosRequest
 	err = _bolt.View(func(tx *bbolt.Tx) error {
@@ -127,7 +129,7 @@ func (s *boltPositionStorage) AcquirePositionBySecond(second uint32) (pos mysql.
 
 		//取 last Timestamp
 		lastKeyByte, lastValueByte = c.Last()
-		lastKeyStr = string(lastKeyByte)
+		//lastKeyStr = string(lastKeyByte)
 		msgpack.Unmarshal(lastValueByte, &lastGetPos)
 		logutil.Infof("获取当前的 position : %s %d %d ", lastGetPos.Name, lastGetPos.Pos, lastGetPos.Timestamp)
 
@@ -141,7 +143,7 @@ func (s *boltPositionStorage) AcquirePositionBySecond(second uint32) (pos mysql.
 				if IsFirstNilPos(keyByte) {
 					return errors.NotFoundf("Wrong!, Run in less than 15 minutes,Not enough position to roll back")
 				}
-				KeyStr = string(keyByte)
+				//KeyStr = string(keyByte)
 				msgpack.Unmarshal(valueByte, &eachPosition)
 				if lastGetPos.Timestamp-eachPosition.Timestamp > second {
 					break

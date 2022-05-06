@@ -4,7 +4,6 @@ import (
 	"fmt"
 	gormMysql "gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"strings"
 	"testing"
 )
 
@@ -44,7 +43,9 @@ func TestTimeConsuming(t *testing.T) {
 
 }
 
-func TestTimeConsum(t *testing.T) {
-	schema := strings.Split("schema.table", ".")[0]
+func TestIsContain(t *testing.T) {
+	var items = make([]string, 0)
+	var item = "sa"
+	schema := IsContain(items, item)
 	fmt.Println(schema)
 }

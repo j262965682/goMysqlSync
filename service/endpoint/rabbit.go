@@ -274,3 +274,8 @@ func (s *RabbitEndpoint) Close() {
 		s.rabCon.Close()
 	}
 }
+
+func (s *RabbitEndpoint) StockExecSql(sql string, valuesList []interface{}) (int64, error) {
+	// TODO
+	return 0, nil
+}

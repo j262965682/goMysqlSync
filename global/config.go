@@ -75,7 +75,7 @@ type Config struct {
 	SkipMasterData bool   `yaml:"skip_master_data"`
 	SetGtidGurged  string `yaml:"set-gtid-purged"`
 
-	BulkSize int `yaml:"bulk_size"`
+	BulkSize int `yaml:"bulk_size"` // chan的长度
 
 	FlushBulkInterval int `yaml:"flush_bulk_interval"`
 	RetryInterval     int `yaml:"retry_interval"`
@@ -99,7 +99,12 @@ type Config struct {
 	MysqlUsername  string `yaml:"mysql_username"`   //Mysql密码
 	MysqlPass      string `yaml:"mysql_pass"`       //Mysql密码
 	MysqlDatabase  int    `yaml:"mysql_database"`   //Mysql数据库
-	Threads        int    `yaml:"threads"`          //写数据的线程数
+
+	Threads    int `yaml:"threads"`     //增量同步的线程数
+	RecordRows int `yaml:"record_rows"` //增量同步的批量大小
+
+	DumpThreads    int `yaml:"dump_threads"`     //全量同步数据线程数
+	DumpRecordRows int `yaml:"dump_record_rows"` //全量同步数据批量大小
 
 	// ------------------- REDIS -----------------
 	RedisAddr       string `yaml:"redis_addrs"`       //redis地址
@@ -273,7 +278,16 @@ func checkConfig(c *Config) error {
 	}
 
 	if c.Threads == 0 || c.Threads < 0 {
-		c.Threads = 20
+		c.Threads = 15
+	}
+	if c.DumpThreads == 0 || c.DumpThreads < 0 {
+		c.DumpThreads = 10
+	}
+	if c.RecordRows == 0 || c.RecordRows < 0 {
+		c.RecordRows = 255
+	}
+	if c.DumpRecordRows == 0 || c.DumpRecordRows < 0 {
+		c.DumpRecordRows = 1000
 	}
 
 	return nil

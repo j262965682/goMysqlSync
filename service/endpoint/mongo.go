@@ -429,3 +429,8 @@ func (s *MongoEndpoint) Close() {
 		s.client.Disconnect(context.Background())
 	}
 }
+
+func (s *MongoEndpoint) StockExecSql(sql string, valuesList []interface{}) (int64, error) {
+	// TODO
+	return 0, nil
+}

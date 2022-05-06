@@ -329,3 +329,8 @@ func (s *RocketEndpoint) Close() {
 		s.client.Shutdown()
 	}
 }
+
+func (s *RocketEndpoint) StockExecSql(sql string, valuesList []interface{}) (int64, error) {
+	// TODO
+	return 0, nil
+}

@@ -42,6 +42,7 @@ type Endpoint interface {
 	Stock([]*global.RowRequest) int64
 	Close()
 	DoRetryRow()
+	StockExecSql(sql string, valuesList []interface{}) (int64, error)
 }
 
 func NewEndpoint(c *global.Config, ds *canal.Canal) Endpoint {
