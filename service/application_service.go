@@ -20,9 +20,9 @@ package service
 import (
 	sidlog "github.com/siddontang/go-log/log"
 
-	"go-mysql-transfer/global"
-	"go-mysql-transfer/storage"
-	"go-mysql-transfer/util/logutil"
+	"go-mysql-sync/global"
+	"go-mysql-sync/storage"
+	"go-mysql-sync/util/logutil"
 )
 
 var (

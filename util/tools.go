@@ -2,7 +2,7 @@ package util
 
 import (
 	"errors"
-	"go-mysql-transfer/global"
+	"go-mysql-sync/global"
 	"hash/crc32"
 	"reflect"
 	"regexp"
@@ -10,7 +10,10 @@ import (
 	"time"
 )
 
-var G_full bool
+var GIncrFlag bool
+var GSchemaFlag bool
+var GStockFlag bool
+
 var G_pos global.PosRequest
 
 func IsNil(i interface{}) bool {
@@ -21,9 +24,16 @@ func IsNil(i interface{}) bool {
 	return false
 }
 
-//存储 full 标识
-func StoreVal(val bool) {
-	G_full = val
+func SetSchemaFlag(val bool) {
+	GSchemaFlag = val
+}
+
+func SetStockFlag(val bool) {
+	GStockFlag = val
+}
+
+func SetIncrFlag(val bool) {
+	GIncrFlag = val
 }
 
 func StoreNewPos(pos global.PosRequest) {

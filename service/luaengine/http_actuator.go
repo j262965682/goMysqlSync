@@ -21,8 +21,8 @@ import (
 	"fmt"
 	lua "github.com/yuin/gopher-lua"
 
-	"go-mysql-transfer/util/httputil"
-	"go-mysql-transfer/util/logutil"
+	"go-mysql-sync/util/httputil"
+	"go-mysql-sync/util/logutil"
 )
 
 var _httpClient = httputil.NewClient()

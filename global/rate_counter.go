@@ -18,7 +18,7 @@
 package global
 
 import (
-	"go-mysql-transfer/util/logutil"
+	"go-mysql-sync/util/logutil"
 	"sync"
 	"time"
 )

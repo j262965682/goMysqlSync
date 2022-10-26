@@ -19,7 +19,7 @@ package global
 
 import (
 	"fmt"
-	"go-mysql-transfer/util/stringutil"
+	"go-mysql-sync/util/stringutil"
 )
 
 func Debug(msg string, data interface{}) {

@@ -15,8 +15,8 @@ import (
 
 	"github.com/pkg/errors"
 
-	"go-mysql-transfer/util/logutil"
-	"go-mysql-transfer/util/stringutil"
+	"go-mysql-sync/util/logutil"
+	"go-mysql-sync/util/stringutil"
 )
 
 // 执行器

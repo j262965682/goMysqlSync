@@ -22,8 +22,8 @@ import (
 	"github.com/siddontang/go-mysql/canal"
 	lua "github.com/yuin/gopher-lua"
 
-	"go-mysql-transfer/global"
-	"go-mysql-transfer/util/stringutil"
+	"go-mysql-sync/global"
+	"go-mysql-sync/util/stringutil"
 )
 
 func mongoModule(L *lua.LState) int {

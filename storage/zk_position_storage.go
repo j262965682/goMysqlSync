@@ -23,7 +23,7 @@ import (
 	"github.com/samuel/go-zookeeper/zk"
 	"github.com/siddontang/go-mysql/mysql"
 
-	"go-mysql-transfer/global"
+	"go-mysql-sync/global"
 )
 
 type zkPositionStorage struct {

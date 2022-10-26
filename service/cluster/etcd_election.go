@@ -26,10 +26,10 @@ import (
 	"go.etcd.io/etcd/clientv3/concurrency"
 	"go.uber.org/atomic"
 
-	"go-mysql-transfer/global"
-	"go-mysql-transfer/storage"
-	"go-mysql-transfer/util/etcdutil"
-	"go-mysql-transfer/util/logutil"
+	"go-mysql-sync/global"
+	"go-mysql-sync/storage"
+	"go-mysql-sync/util/etcdutil"
+	"go-mysql-sync/util/logutil"
 )
 
 const _electionNodeTTL = 5

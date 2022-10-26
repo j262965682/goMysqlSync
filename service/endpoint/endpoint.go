@@ -19,7 +19,7 @@ package endpoint
 
 import (
 	"encoding/json"
-	"go-mysql-transfer/service/luaengine"
+	"go-mysql-sync/service/luaengine"
 	"strconv"
 	"strings"
 	"time"
@@ -29,10 +29,10 @@ import (
 	"github.com/siddontang/go-mysql/schema"
 	"github.com/vmihailenco/msgpack"
 
-	"go-mysql-transfer/global"
-	"go-mysql-transfer/storage"
-	"go-mysql-transfer/util/logutil"
-	"go-mysql-transfer/util/stringutil"
+	"go-mysql-sync/global"
+	"go-mysql-sync/storage"
+	"go-mysql-sync/util/logutil"
+	"go-mysql-sync/util/stringutil"
 )
 
 type Endpoint interface {
@@ -43,6 +43,7 @@ type Endpoint interface {
 	Close()
 	DoRetryRow()
 	StockExecSql(sql string, valuesList []interface{}) (int64, error)
+	FindSQLToMap(sql string) ([]map[string]interface{}, error)
 }
 
 func NewEndpoint(c *global.Config, ds *canal.Canal) Endpoint {

@@ -4,8 +4,7 @@ import (
 	"fmt"
 	"strings"
 	"testing"
-
-	stringu "github.com/pingcap/tidb/util/stringutil"
+	"unsafe"
 )
 
 func TestIsChineseChar(t *testing.T) {
@@ -21,10 +20,10 @@ type RowRequest struct {
 	Row     []interface{}
 }
 
-func TestStringCopy(t *testing.T) {
-	copies := stringu.Copy("ssssss")
-	fmt.Println(copies)
-}
+//func TestStringCopy(t *testing.T) {
+//	copies := stringu.Copy("ssssss")
+//	fmt.Println(copies)
+//}
 
 func TestIndexof(t *testing.T) {
 	str := "ss_sss_s"
@@ -40,4 +39,9 @@ func TestToUint32(t *testing.T) {
 	str2 := "a964063387"
 	fmt.Println(ToUint32(str2))
 	fmt.Println(ToUint32Safe(str2))
+}
+
+func TestInt(t *testing.T) {
+	var ti int
+	fmt.Println(unsafe.Sizeof(ti))
 }

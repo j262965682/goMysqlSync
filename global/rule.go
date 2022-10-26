@@ -31,9 +31,9 @@ import (
 	lua "github.com/yuin/gopher-lua"
 	"github.com/yuin/gopher-lua/parse"
 
-	"go-mysql-transfer/util/dateutil"
-	"go-mysql-transfer/util/fileutil"
-	"go-mysql-transfer/util/stringutil"
+	"go-mysql-sync/util/dateutil"
+	"go-mysql-sync/util/fileutil"
+	"go-mysql-sync/util/stringutil"
 )
 
 const (

@@ -20,7 +20,7 @@ package storage
 import (
 	"errors"
 	"fmt"
-	"go-mysql-transfer/util/byteutil"
+	"go-mysql-sync/util/byteutil"
 	"path/filepath"
 	"strings"
 	"time"
@@ -30,10 +30,10 @@ import (
 	"go.etcd.io/etcd/clientv3"
 	etcdlog "go.etcd.io/etcd/pkg/logutil"
 
-	"go-mysql-transfer/global"
-	"go-mysql-transfer/util/fileutil"
-	"go-mysql-transfer/util/logutil"
-	"go-mysql-transfer/util/zkutil"
+	"go-mysql-sync/global"
+	"go-mysql-sync/util/fileutil"
+	"go-mysql-sync/util/logutil"
+	"go-mysql-sync/util/zkutil"
 )
 
 const (

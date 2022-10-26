@@ -20,7 +20,7 @@ package luaengine
 import (
 	json "github.com/layeh/gopher-json"
 	lua "github.com/yuin/gopher-lua"
-	"go-mysql-transfer/util/logutil"
+	"go-mysql-sync/util/logutil"
 )
 
 func dbModule(L *lua.LState) int {

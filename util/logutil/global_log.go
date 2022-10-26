@@ -29,7 +29,7 @@ import (
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
 
-	"go-mysql-transfer/util/fileutil"
+	"go-mysql-sync/util/fileutil"
 )
 
 var _globalLogWriter io.Writer

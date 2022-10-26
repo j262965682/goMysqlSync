@@ -25,11 +25,11 @@ import (
 	"github.com/vmihailenco/msgpack"
 	"strings"
 
-	"go-mysql-transfer/global"
-	"go-mysql-transfer/service/luaengine"
-	"go-mysql-transfer/storage"
-	"go-mysql-transfer/util/logutil"
-	"go-mysql-transfer/util/stringutil"
+	"go-mysql-sync/global"
+	"go-mysql-sync/service/luaengine"
+	"go-mysql-sync/storage"
+	"go-mysql-sync/util/logutil"
+	"go-mysql-sync/util/stringutil"
 )
 
 type Elastic6Endpoint struct {
@@ -386,4 +386,10 @@ func (s *Elastic6Endpoint) Close() {
 func (s *Elastic6Endpoint) StockExecSql(sql string, valuesList []interface{}) (int64, error) {
 	// TODO
 	return 0, nil
+}
+
+func (s *Elastic6Endpoint) FindSQLToMap(sql string) ([]map[string]interface{}, error) {
+	var sqlResult []map[string]interface{}
+	// TODO
+	return sqlResult, nil
 }

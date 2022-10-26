@@ -18,7 +18,7 @@
 package cluster
 
 import (
-	"go-mysql-transfer/global"
+	"go-mysql-sync/global"
 )
 
 type Election interface {

@@ -21,7 +21,7 @@ import (
 	"github.com/juju/errors"
 	"go.etcd.io/bbolt"
 
-	"go-mysql-transfer/util/byteutil"
+	"go-mysql-sync/util/byteutil"
 )
 
 type BoltRowStorage struct {

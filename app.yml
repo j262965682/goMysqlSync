@@ -28,13 +28,13 @@ mysql_username: user_sync     #mysql用户名
 mysql_pass: user_sync         #mysql密码
 threads: 20                   #增量数据回放多线程数量
 record_rows: 255              #增量数据回放每批次大小
-dump_threads: 10              #全量同步线程数
+dump_threads: 40              #全量同步线程数
 dump_record_rows: 1000        #全量同步每批次大小
 
 #规则配置
 rule:
   -
-    schema: db_budget        #数据库名称
+    schema: db_expense        #数据库名称
     table: table_all_in     #表名称 # table_all_in 表示 全部表
     column_underscore_to_camel: true #列名称下划线转驼峰,默认为false
     value_encoder: json     #值编码，支持json、kv-commas、v-commas；默认为json；json形如：{"id":123,"name":"wangjie"} 、kv-commas形如：id=123,name="wangjie"、v-commas形如：123,wangjie

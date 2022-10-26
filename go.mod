@@ -1,4 +1,4 @@
-module go-mysql-transfer
+module go-mysql-sync
 
 go 1.15
 
@@ -15,6 +15,7 @@ require (
 	github.com/mattn/go-colorable v0.1.8
 	github.com/olivere/elastic v6.2.35+incompatible
 	github.com/olivere/elastic/v7 v7.0.22
+	github.com/panjf2000/ants/v2 v2.5.0 // indirect
 	github.com/pingcap/errors v0.11.0
 	github.com/pingcap/tidb v2.0.11+incompatible // indirect
 	github.com/pkg/errors v0.9.1

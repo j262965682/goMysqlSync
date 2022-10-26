@@ -24,8 +24,8 @@ import (
 	lua "github.com/yuin/gopher-lua"
 	"sync"
 
-	"go-mysql-transfer/util/byteutil"
-	"go-mysql-transfer/util/stringutil"
+	"go-mysql-sync/util/byteutil"
+	"go-mysql-sync/util/stringutil"
 )
 
 const (

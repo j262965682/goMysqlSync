@@ -18,9 +18,9 @@
 package service
 
 import (
-	"go-mysql-transfer/global"
-	"go-mysql-transfer/service/cluster"
-	"go-mysql-transfer/util/logutil"
+	"go-mysql-sync/global"
+	"go-mysql-sync/service/cluster"
+	"go-mysql-sync/util/logutil"
 )
 
 type ClusterService struct {

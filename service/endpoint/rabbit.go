@@ -22,10 +22,10 @@ import (
 	"github.com/pquerna/ffjson/ffjson"
 	"github.com/streadway/amqp"
 	"github.com/vmihailenco/msgpack"
-	"go-mysql-transfer/global"
-	"go-mysql-transfer/service/luaengine"
-	"go-mysql-transfer/storage"
-	"go-mysql-transfer/util/logutil"
+	"go-mysql-sync/global"
+	"go-mysql-sync/service/luaengine"
+	"go-mysql-sync/storage"
+	"go-mysql-sync/util/logutil"
 )
 
 type RabbitEndpoint struct {

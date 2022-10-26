@@ -19,9 +19,11 @@ package service
 
 import (
 	"fmt"
+	"github.com/panjf2000/ants/v2"
 	"github.com/siddontang/go-mysql/schema"
-	"go-mysql-transfer/service/endpoint"
-	"go-mysql-transfer/util/stringutil"
+	"go-mysql-sync/service/endpoint"
+	"go-mysql-sync/util"
+	"go-mysql-sync/util/stringutil"
 	"go.uber.org/atomic"
 	"runtime"
 	"strings"
@@ -30,9 +32,9 @@ import (
 	"github.com/juju/errors"
 	"github.com/siddontang/go-mysql/canal"
 
-	"go-mysql-transfer/global"
-	"go-mysql-transfer/util/dateutil"
-	"go-mysql-transfer/util/logutil"
+	"go-mysql-sync/global"
+	"go-mysql-sync/util/dateutil"
+	"go-mysql-sync/util/logutil"
 )
 
 var _threads = runtime.NumCPU()
@@ -66,63 +68,123 @@ func NewStockService(t *TransferService) *StockService {
 	}
 }
 
+type stockRequest struct {
+	key                 string
+	columnsString       string
+	columnsStringBTABLE string
+	batch               int64
+}
+
 func (s *StockService) Run() error {
 	var tableMate *schema.Table
 	var err error
 
-	startTime := dateutil.NowMillisecond()
-	logutil.BothInfof(fmt.Sprintf("批量小大为 size: %d", s.dumpRecordRows))
-	size := s.dumpRecordRows
 	// 获取当前 position
 	if endpoint.InitPos, err = s.canal.GetMasterPos(); err != nil {
 		return err
 	}
 	logutil.BothInfof(fmt.Sprintf("当前 position : %s", endpoint.InitPos.String()))
-	for key, status := range s.table {
-		// 取表的列
-		if tableMate, err = s.canal.GetTable(status.Schema, status.Name); err != nil {
-			errors.Trace(err)
-			return err
-		}
-		status.Columns = tableMate.Columns
-		s.table[key] = status
-		columnsString := s.getColumnsString(tableMate.Columns)
-		tableCount := status.Rows
-		logutil.BothInfof(fmt.Sprintf("开始导出 %s,共 %d 条数据", key, status.Rows))
 
-		s.counter[key] = 0
+	// 判断是否同步全量数据标识
+	if util.GStockFlag {
+		startTime := dateutil.NowMillisecond()
+		logutil.BothInfof(fmt.Sprintf("全量同步开始,批量小大为 size: %d", s.dumpRecordRows))
+		size := s.dumpRecordRows
 
-		var batch int64
-		if tableCount%size == 0 {
-			batch = tableCount / size
-		} else {
-			batch = (tableCount / size) + 1
-		}
-		// 批次进度
-		var processed atomic.Int64
-		for i := 0; i < global.Cfg().DumpThreads; i++ {
-			s.wg.Add(1)
-			go func(key, columnsString string) {
-				for {
-					processed.Inc()
-					err = s.syncBatchRows(key, columnsString, processed.Load())
-					if err != nil {
-						logutil.Error(err.Error())
-						s.shutoff.Store(true)
-						break
-					}
-					if processed.Load() > batch {
-						break
-					}
-				}
+		for key, status := range s.table {
+			// 取表的列
+			if tableMate, err = s.canal.GetTable(status.Schema, status.Name); err != nil {
+				errors.Trace(err)
+				return err
+			}
+			status.Columns = tableMate.Columns
+			s.table[key] = status
+			columnsString := s.getColumnsString(tableMate.Columns)
+			columnsStringBTABLE := s.getColumnsStringBTABLE(tableMate.Columns)
+			tableCount := status.Rows
+
+			if tableCount == 0 {
+				logutil.BothInfof(fmt.Sprintf("%s 表无数据 ,调过 ", key))
+				continue
+			} else {
+				logutil.BothInfof(fmt.Sprintf("开始导出 %s,共 %d 条数据", key, status.Rows))
+			}
+
+			s.counter[key] = 0
+
+			// 批次
+			var batch int64
+			if tableCount%size == 0 {
+				batch = tableCount / size
+			} else {
+				batch = (tableCount / size) + 1
+			}
+			// logutil.BothInfof(fmt.Sprintf(" %d 线程数", global.Cfg().DumpThreads))
+			pool, _ := ants.NewPoolWithFunc(global.Cfg().DumpThreads, func(stockReq interface{}) {
+				req := stockReq.(*stockRequest)
+				var n int
+				s.syncBatchRows(req.key, req.columnsString, req.columnsStringBTABLE, req.batch, n)
 				s.wg.Done()
-			}(key, columnsString)
+			})
+			var index int64
+			for index = 1; index <= batch; index++ {
+				var oneStock = &stockRequest{key: key, columnsString: columnsString, columnsStringBTABLE: columnsStringBTABLE, batch: index}
+				s.wg.Add(1)
+				pool.Invoke(oneStock)
+			}
+			s.wg.Wait()
+			pool.Release()
+			logutil.BothInfof(fmt.Sprintf(" %s 导入完成", key))
+			//// -----------------------------------------------------------------------------------------
+			//var stockArray []chan *stockRequest
+			//
+			////var index int64
+			//for i := 0; i < global.Cfg().DumpThreads; i++ {
+			//	stockArray[i] = make(chan *stockRequest)
+			//	go func(request chan *stockRequest) {
+			//		for req := range request {
+			//			s.syncBatchRows(key, columnsString, columnsStringBTABLE, req.batch, i)
+			//		}
+			//	}(stockArray[i])
+			//}
+			//for index = 0; index < batch; index++ {
+			//	var oneStock = &stockRequest{key: key,columnsString: columnsString,columnsStringBTABLE: columnsStringBTABLE,batch: index}
+			//	wg.Add(1)
+			//	_ = primitive.Invoker()
+			//}
+			//
+			//// -------------------------------------------------------------多线程处理插入
+			//// 批次进度
+			//var processed atomic.Int64
+			//for i := 0; i < global.Cfg().DumpThreads; i++ {
+			//	s.wg.Add(1)
+			//	go func(key, columnsString, columnsStringBTABLE string, i int) {
+			//		for {
+			//			logutil.BothInfof("%d 号 线程开始循环", i)
+			//			processed.Inc()
+			//			err = s.syncBatchRows(key, columnsString, columnsStringBTABLE, processed.Load(), i)
+			//			if err != nil {
+			//				logutil.Error(err.Error())
+			//				s.shutoff.Store(true)
+			//				break
+			//			}
+			//			if processed.Load() > batch {
+			//				break
+			//			}
+			//		}
+			//		s.wg.Done()
+			//	}(key, columnsString, columnsStringBTABLE, i)
+			//}
+			//s.wg.Wait()
+			//logutil.BothInfof(fmt.Sprintf(" %s 导入完成", key))
+			// --------------------------------------------------------------------------------------
 		}
-		s.wg.Wait()
-		logutil.BothInfof(fmt.Sprintf(" %s 导入完成", key))
+		logutil.BothInfof(fmt.Sprintf("全量同步完成 共耗时 ：%d（毫秒）", dateutil.NowMillisecond()-startTime))
+		return err
+	} else {
+		logutil.BothInfof("跳过全量同步")
+		return nil
 	}
-	fmt.Println(fmt.Sprintf("共耗时 ：%d（毫秒）", dateutil.NowMillisecond()-startTime))
-	return nil
 }
 
 //func (s *StockService) export(fullName, columns string, batch int64, rule *global.Rule) ([]*global.RowRequest, error) {
@@ -252,18 +314,47 @@ func (s *StockService) getColumnsString(tableColumn []schema.TableColumn) string
 	return columns
 }
 
-func (s *StockService) syncBatchRows(schemaTable string, columns string, batch int64) error {
-	if s.shutoff.Load() {
-		return errors.New("shutoff")
+func (s *StockService) getColumnsStringBTABLE(tableColumn []schema.TableColumn) string {
+	var columns string
+	for _, column := range tableColumn {
+		if columns != "" {
+			columns = columns + ","
+		}
+		columns = columns + "b.`" + column.Name + "`"
 	}
+	return columns
+}
+
+func (s *StockService) syncBatchRows(schemaTable string, columns string, columnsB string, batch int64, threadNum int) error {
+	//var mysqlEndpoint endpoint.Endpoint
+	//if s.shutoff.Load() {
+	//	return errors.New("shutoff")
+	//}
+	//if global.Cfg().IsMysql() {
+	//	mysqlEndpoint, _ := s.endpoint.(*endpoint.MysqlEndpoint)
+	//}
+	//var err error
 	offset := s.offset(batch)
-	selectSql := fmt.Sprintf("select %s from %s order by id limit %d,%d", columns, schemaTable, offset, s.dumpRecordRows)
-	resultSet, err := s.canal.Execute(selectSql)
+
+	//  select b.* from (select id from zlb_expense_form_check_result order by id limit 100000,1000) a left join zlb_expense_form_check_result b on a.id=b.id
+	selectSql := fmt.Sprintf("select %s from (select id from %s order by id limit %d,%d) a left join %s b on a.id=b.id", columnsB, schemaTable, offset, s.dumpRecordRows, schemaTable)
+
+	//logutil.Info(selectSql)
+
+	// 结果集 用 canal 来查询
+	//resultSet, err := s.canal.Execute(selectSql)
+	//if err != nil {
+	//	logutil.Errorf("数据导出错误: %s - %s", schemaTable, err.Error())
+	//	return err
+	//}
+
+	// 结果集 用 gorm 来查询
+	resultSet, err := s.endpoint.FindSQLToMap(selectSql)
 	if err != nil {
-		logutil.Errorf("数据导出错误: %s - %s", schemaTable, err.Error())
 		return err
 	}
-	rowNumber := resultSet.RowNumber()
+
+	rowNumber := len(resultSet)
 	if rowNumber == 0 {
 		logutil.Infof("未查询到数据: %s : limit %d, %d", schemaTable, offset, s.dumpRecordRows)
 		return nil
@@ -275,7 +366,32 @@ func (s *StockService) syncBatchRows(schemaTable string, columns string, batch i
 	// values list
 	allValues := make([]interface{}, 0, len(s.table[schemaTable].Columns)*rowNumber)
 
-	for i := 0; i < rowNumber; i++ {
+	//// 用 canal 来处理结果集
+	//for i := 0; i < rowNumber; i++ {
+	//	rowValues := make([]interface{}, 0, len(s.table[schemaTable].Columns))
+	//	var itemValues string
+	//	itemValues = strings.Repeat(" ?,", len(s.table[schemaTable].Columns))
+	//	itemValues = stringutil.CutLastString(itemValues, 1)
+	//	itemValues = fmt.Sprintf("( %s )", itemValues)
+	//
+	//	if insertValues != "" {
+	//		insertValues = insertValues + ","
+	//	}
+	//	insertValues = insertValues + itemValues
+	//
+	//	for j := 0; j < len(s.table[schemaTable].Columns); j++ {
+	//		val, err := resultSet.GetValue(i, j)
+	//		if err != nil {
+	//			logutil.Errorf("数据导出错误: %s - %s", selectSql, err.Error())
+	//			break
+	//		}
+	//		rowValues = append(rowValues, val)
+	//	}
+	//
+	//	allValues = append(allValues, rowValues...)
+	//}
+
+	for index := range resultSet {
 		rowValues := make([]interface{}, 0, len(s.table[schemaTable].Columns))
 		var itemValues string
 		itemValues = strings.Repeat(" ?,", len(s.table[schemaTable].Columns))
@@ -287,12 +403,8 @@ func (s *StockService) syncBatchRows(schemaTable string, columns string, batch i
 		}
 		insertValues = insertValues + itemValues
 
-		for j := 0; j < len(s.table[schemaTable].Columns); j++ {
-			val, err := resultSet.GetValue(i, j)
-			if err != nil {
-				logutil.Errorf("数据导出错误: %s - %s", selectSql, err.Error())
-				break
-			}
+		for _, column := range s.table[schemaTable].Columns {
+			val := resultSet[index][column.Name]
 			rowValues = append(rowValues, val)
 		}
 		allValues = append(allValues, rowValues...)
@@ -301,7 +413,13 @@ func (s *StockService) syncBatchRows(schemaTable string, columns string, batch i
 	insertSql := insertTable + insertValues
 	var rowsAffected int64
 	rowsAffected, err = s.endpoint.StockExecSql(insertSql, allValues)
+	if err != nil {
+		return err
+	}
 	//logutil.BothInfof(fmt.Sprintf("%s 导入数据 %d 条", schemaTable, s.incCounter(schemaTable, rowsAffected)))
 	logutil.BothInfof(fmt.Sprintf("%s 导入数据 %d 条", schemaTable, rowsAffected))
+	//if rowsAffected == 0 {
+	//	logutil.BothInfof(selectSql)
+	//}
 	return nil
 }

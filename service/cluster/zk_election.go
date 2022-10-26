@@ -23,9 +23,9 @@ import (
 	"github.com/samuel/go-zookeeper/zk"
 	"go.uber.org/atomic"
 
-	"go-mysql-transfer/global"
-	"go-mysql-transfer/storage"
-	"go-mysql-transfer/util/logutil"
+	"go-mysql-sync/global"
+	"go-mysql-sync/storage"
+	"go-mysql-sync/util/logutil"
 )
 
 type zkElection struct {

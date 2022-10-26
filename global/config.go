@@ -25,9 +25,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"go-mysql-transfer/util/fileutil"
-	"go-mysql-transfer/util/logutil"
-	"go-mysql-transfer/util/netutil"
+	"go-mysql-sync/util/fileutil"
+	"go-mysql-sync/util/logutil"
+	"go-mysql-sync/util/netutil"
 )
 
 const (

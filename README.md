@@ -137,5 +137,5 @@ func parseStmt(stmt ast.StmtNode) (ns []*node) {
 ### 本项目基于二次开发:
 <a href="https://github.com/go-mysql-org/go-mysql" target="_blank">github.com/siddontang/go-mysql</a>
 
-<a href="https://github.com/wj596/go-mysql-transfer" target="_blank">github.com/wj596/go-mysql-transfer</a>
+<a href="https://github.com/wj596/go-mysql-sync" target="_blank">github.com/wj596/go-mysql-sync</a>
 

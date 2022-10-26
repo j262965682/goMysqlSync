@@ -19,8 +19,8 @@ package service
 
 import (
 	"fmt"
-	"go-mysql-transfer/storage"
-	"go-mysql-transfer/util"
+	"go-mysql-sync/storage"
+	"go-mysql-sync/util"
 	"strconv"
 	"strings"
 	"time"
@@ -30,8 +30,8 @@ import (
 	"github.com/siddontang/go-mysql/mysql"
 	"github.com/siddontang/go-mysql/replication"
 
-	"go-mysql-transfer/global"
-	"go-mysql-transfer/util/logutil"
+	"go-mysql-sync/global"
+	"go-mysql-sync/util/logutil"
 )
 
 type handler struct {

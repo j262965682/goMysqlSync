@@ -23,11 +23,11 @@ import (
 	"github.com/olivere/elastic/v7"
 	"github.com/siddontang/go-mysql/canal"
 	"github.com/vmihailenco/msgpack"
-	"go-mysql-transfer/global"
-	"go-mysql-transfer/service/luaengine"
-	"go-mysql-transfer/storage"
-	"go-mysql-transfer/util/logutil"
-	"go-mysql-transfer/util/stringutil"
+	"go-mysql-sync/global"
+	"go-mysql-sync/service/luaengine"
+	"go-mysql-sync/storage"
+	"go-mysql-sync/util/logutil"
+	"go-mysql-sync/util/stringutil"
 )
 
 type Elastic7Endpoint struct {
@@ -393,4 +393,9 @@ func (s *Elastic7Endpoint) Close() {
 func (s *Elastic7Endpoint) StockExecSql(sql string, valuesList []interface{}) (int64, error) {
 	// TODO
 	return 0, nil
+}
+
+func (s *Elastic7Endpoint) FindSQLToMap(sql string) ([]map[string]interface{}, error) {
+	var sqlResult []map[string]interface{}
+	return sqlResult, nil
 }

@@ -23,7 +23,7 @@ import (
 	"io"
 	"time"
 
-	"go-mysql-transfer/util/fileutil"
+	"go-mysql-sync/util/fileutil"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )

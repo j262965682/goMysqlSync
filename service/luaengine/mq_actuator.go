@@ -20,7 +20,7 @@ package luaengine
 import (
 	lua "github.com/yuin/gopher-lua"
 
-	"go-mysql-transfer/global"
+	"go-mysql-sync/global"
 )
 
 func mqModule(L *lua.LState) int {

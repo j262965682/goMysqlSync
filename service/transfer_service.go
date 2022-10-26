@@ -21,7 +21,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/siddontang/go-mysql/mysql"
-	"go-mysql-transfer/util"
 	"log"
 	"regexp"
 	"sync"
@@ -31,10 +30,10 @@ import (
 	"github.com/siddontang/go-mysql/canal"
 	"go.uber.org/atomic"
 
-	"go-mysql-transfer/global"
-	"go-mysql-transfer/service/endpoint"
-	"go-mysql-transfer/storage"
-	"go-mysql-transfer/util/logutil"
+	"go-mysql-sync/global"
+	"go-mysql-sync/service/endpoint"
+	"go-mysql-sync/storage"
+	"go-mysql-sync/util/logutil"
 )
 
 const _metricsTaskInterval = 10
@@ -122,24 +121,25 @@ func (s *TransferService) run() error {
 	}
 	//G_full if true,全量同步；if false,增量同步
 	var current mysql.Position
-	var err error
-	if util.G_full {
-		// 新的全量加增量同步 读取源端 当前 position
-		current = endpoint.InitPos
-	} else if util.G_pos.Timestamp > 0 {
-		// 指定 position 开始增量同步，position 是从 bolt 里面获取的 有Timestamp字段
-		current.Timestamp = util.G_pos.Timestamp
-		current.Pos = util.G_pos.Pos
-		current.Name = util.G_pos.Name
-	} else {
-		// 掉线后，重新开启同步，不提供 position，自动从 bolt 里面获取
-		logutil.Infof("获取十五分钟前的binlog位置")
-		current, err = s.positionStorage.AcquirePosition()
-		if err != nil {
-			panic(err)
-		}
-		logutil.Infof("重新开始同步数据")
-	}
+	//var err error
+	current = endpoint.InitPos
+	//if util.GFull {
+	//	// 新的全量加增量同步 读取源端 当前 position
+	//	current = endpoint.InitPos
+	//} else if util.G_pos.Timestamp > 0 {
+	//	// 指定 position 开始增量同步，position 是从 bolt 里面获取的 有Timestamp字段
+	//	current.Timestamp = util.G_pos.Timestamp
+	//	current.Pos = util.G_pos.Pos
+	//	current.Name = util.G_pos.Name
+	//} else {
+	//	// 掉线后，重新开启同步，不提供 position，自动从 bolt 里面获取
+	//	logutil.Infof("获取十五分钟前的binlog位置")
+	//	current, err = s.positionStorage.AcquirePosition()
+	//	if err != nil {
+	//		panic(err)
+	//	}
+	//	logutil.Infof("重新开始同步数据")
+	//}
 
 	logutil.BothInfof("transfer run from pos %s %d", current.Name, current.Pos)
 

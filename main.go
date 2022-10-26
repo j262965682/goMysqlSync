@@ -20,7 +20,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"go-mysql-transfer/util"
+	"go-mysql-sync/util"
 	"log"
 	"net/http"
 	"os"
@@ -31,39 +31,66 @@ import (
 	"syscall"
 
 	"github.com/juju/errors"
-	"go-mysql-transfer/global"
-	"go-mysql-transfer/service"
-	"go-mysql-transfer/storage"
-	"go-mysql-transfer/util/logutil"
-	"go-mysql-transfer/util/stringutil"
+	"go-mysql-sync/global"
+	"go-mysql-sync/service"
+	"go-mysql-sync/storage"
+	"go-mysql-sync/util/logutil"
+	"go-mysql-sync/util/stringutil"
 	_ "net/http/pprof"
 )
 
 var (
 	helpFlag      bool
 	cfgPath       string
-	stockFlag     bool
 	positionFlag  bool
+	startPosition bool
 	statusFlag    bool
+
 	deletePosFlag bool
-	full          bool
+
+	full       bool
+	incrFlag   bool
+	schemaFlag bool
+	stockFlag  bool
+	syncMode   int
 )
 
 func init() {
 	flag.BoolVar(&helpFlag, "help", false, "this help")
 	flag.StringVar(&cfgPath, "config", "app.yml", "application config file")
 
-	//按表查数据导入
-	//flag.BoolVar(&stockFlag, "stock", false, "stock data import")
+	//// go run main.go -full
+	//
+	//// 只同步一次全量数据
+	//flag.BoolVar(&stockFlag, "only-stock", false, "One-off stock,no increment sync")
+	//
+	//// 只增量数据
+	//flag.BoolVar(&incrFlag, "only-increment", false, "only increment sync,no stock")
+	//
+	//// 全量+增量同步---默认值
+	//flag.BoolVar(&full, "stock-increment", false, "stock and increment sync")
 
-	//设置当前binlog位置并且开始运行    go run main.go -position mysql-bin.000469 324783 1619431429
-	flag.BoolVar(&positionFlag, "position", false, "set dump position")
+	//// 只同步表结构
+	//flag.BoolVar(&schemaFlag, "only-schema", false, "only sync schema")
+
+	//设置当前binlog位置并且开始运行    go run main.go -start-position mysql-bin.000469 324783 1619431429
+	flag.BoolVar(&startPosition, "start-position", false, "start increment sync with that position")
+
 	//查询当前binlog位置              go run main.go -status 900
-	flag.BoolVar(&statusFlag, "status", false, "Query the position of many seconds age,This position is the first one greater than yours seconds.")
-	//是否同步表结构                   go run main.go -full
-	flag.BoolVar(&full, "full", true, "sync table struct or not")
-	//position data 日志过大，清理data    go run main.go -deletepos
-	flag.BoolVar(&deletePosFlag, "deletepos", false, "sync table struct or not")
+	flag.BoolVar(&statusFlag, "current-position", false, "Query the position of many seconds age,This position is the first one greater than yours seconds.")
+
+	//position data 日志过大，清理data    go run main.go -delete pos
+	flag.BoolVar(&deletePosFlag, "delete-pos", false, "sync table struct or not")
+
+	// sync-mode 同步模式    go run .\main.go --sync-mode=6
+	flag.IntVar(&syncMode, "sync-mode", 0, `数值型 :一般为 6
+同步模式  表结构   全量数据   增量数据
+   1       是        否       否      只同步表结构
+   2       否        是       否      只同步全量数据
+   3       否        否       是      只同步增量数据
+   4       是        是       否      同步表结构和全量数据
+   5       否        是       是      同步全量数据和增量数据，忽略表结构
+   6       是        是       是      先同步表结构，再同步全量数据和增量数据`)
 
 	flag.Usage = usage
 }
@@ -76,14 +103,44 @@ func main() {
 		flag.Usage()
 		return
 	}
-	util.StoreVal(full)
+	// sync-mode 同步模式
+	//        表结构   全量数据   增量数据
+	// 1        是        否       否      只同步表结构
+	// 2        否        是       否      只同步全量数据
+	// 3        否        否       是      只同步增量数据
+	// 4        是        是       否      同步表结构和全量数据
+	// 5        否        是       是      同步全量数据和增量数据，忽略表结构
+	// 6        是        是       是      先同步表结构，再同步全量数据和增量数据
+
+	others := make([]string, 2)
+	if syncMode != 0 {
+		switch syncMode {
+		case 1:
+			util.SetSchemaFlag(true)
+		case 2:
+			util.SetStockFlag(true)
+		case 3:
+			util.SetIncrFlag(true)
+		case 4:
+			util.SetSchemaFlag(true)
+			util.SetStockFlag(true)
+		case 5:
+			util.SetStockFlag(true)
+			util.SetIncrFlag(true)
+		case 6:
+			util.SetSchemaFlag(true)
+			util.SetStockFlag(true)
+			util.SetIncrFlag(true)
+		default:
+			fmt.Println("Unidentifiable number,only 1 to 6.")
+			return
+		}
+	}
+
 	//-----------------------------------
 	go http.ListenAndServe(":9999", nil)
 	//-----------------------------------
 	n := runtime.GOMAXPROCS(runtime.NumCPU())
-
-	// cfgPath = "D:\\transfer\\app_redis_lua.yml"
-	// stockFlag = true
 
 	err := service.InitApplication(cfgPath)
 	if err != nil {
@@ -92,9 +149,8 @@ func main() {
 		return
 	}
 
-	logutil.Infof("GOMAXPROCS :%d ", n)
+	logutil.Infof("GOMAXPROCS :%d", n)
 
-	others := make([]string, 2)
 	if statusFlag {
 		var err error
 		var secondInt int
@@ -151,6 +207,9 @@ func main() {
 		fmt.Printf("The current dump position is : %s, %d, %d \n", f, pp, timestamp)
 	}
 
+	if !util.GIncrFlag {
+		logutil.Infof("OK.")
+	}
 	//if stockFlag {
 	//	transfer := service.TransferServiceIns()
 	//	stock := service.NewStockService(transfer)

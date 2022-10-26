@@ -8,11 +8,11 @@ import (
 	"github.com/siddontang/go-mysql/mysql"
 	"github.com/siddontang/go-mysql/schema"
 	"github.com/vmihailenco/msgpack"
-	"go-mysql-transfer/global"
-	"go-mysql-transfer/storage"
-	"go-mysql-transfer/util"
-	"go-mysql-transfer/util/logutil"
-	"go-mysql-transfer/util/stringutil"
+	"go-mysql-sync/global"
+	"go-mysql-sync/storage"
+	"go-mysql-sync/util"
+	"go-mysql-sync/util/logutil"
+	"go-mysql-sync/util/stringutil"
 	gormMysql "gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -40,7 +40,12 @@ type TableStatus struct {
 	Done    bool   // 每个表是否完成全量
 	Sql     string //建表语句
 	Columns []schema.TableColumn
-	MaxID   int64 //id最大值
+	RangeId RangeID //id范围
+}
+
+type RangeID struct {
+	Max int64 `gorm:"column:max"`
+	Min int64 `gorm:"column:min"`
 }
 
 type MysqlEndpoint struct {
@@ -59,7 +64,7 @@ type DdlClient struct {
 
 func newMysqlEndpoint(c *global.Config) *MysqlEndpoint {
 	// dsn format: "user:password@addr?dbname"
-	dsn := c.MysqlUsername + ":" + c.MysqlPass + "@tcp(" + c.MysqlAddr + ")/" + "test?charset=utf8&parseTime=True&loc=Local"
+	dsn := c.MysqlUsername + ":" + c.MysqlPass + "@tcp(" + c.MysqlAddr + ")/" + "demo_sync?charset=utf8&parseTime=True&loc=Local"
 	mysql := &MysqlEndpoint{}
 	newLogger := logger.New(
 		log.New(colorable.NewColorableStdout(), "\r\n", log.LstdFlags), // io writer
@@ -96,18 +101,15 @@ func (s *MysqlEndpoint) Start() error {
 	if err = s.Ping(); err != nil {
 		return err
 	}
-	//判断是否需要同步表结构标识
-	if util.G_full {
-		//同步库表信息
-		if err = s.SyncTableStructure(); err != nil {
-			return err
-		}
+	//搜集库表信息 内部会判断是否需要同步表结构标识
+	if err = s.SyncTableStructure(); err != nil {
+		return err
 	}
 	return nil
 }
 
 func (s *MysqlEndpoint) GetMasterClient() (db *gorm.DB, err error) {
-	dsn := s.config.User + ":" + s.config.Password + "@tcp(" + s.config.Addr + ")/" + "test?charset=utf8&parseTime=True&loc=Local"
+	dsn := s.config.User + ":" + s.config.Password + "@tcp(" + s.config.Addr + ")/" + "demo_sync?charset=utf8&parseTime=True&loc=Local"
 	db, err = gorm.Open(gormMysql.New(gormMysql.Config{
 		DSN:                       dsn,   // DSN data source name
 		DefaultStringSize:         256,   // string 类型字段的默认长度
@@ -198,43 +200,46 @@ func (s *MysqlEndpoint) SyncTableStructure() error {
 	}
 
 	GFullProgress.Table = tableDump
+	// 根据 表结构标识 判断是否需要执行表结构
+	if util.GSchemaFlag {
+		// 执行建库
+		for _, schema := range createSchemas {
+			logutil.BothInfof("新建 %s 库", schema)
+			// CREATE DATABASE IF NOT EXISTS mytestdb CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_general_ci';
+			CreateDatabaseNotExistsSql := `CREATE DATABASE IF NOT EXISTS ` + strings.ToLower(schema) + ` CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_general_ci';`
+			if db := s.client.Exec(CreateDatabaseNotExistsSql); db.Error != nil {
+				return db.Error
+			}
+		}
 
-	// 执行建库
-	for _, schema := range createSchemas {
-		logutil.BothInfof("新建 %s 库", schema)
-		// CREATE DATABASE IF NOT EXISTS mytestdb CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_general_ci';
-		CreateDatabaseNotExistsSql := `CREATE DATABASE IF NOT EXISTS ` + strings.ToLower(schema) + ` CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_general_ci';`
-		if db := s.client.Exec(CreateDatabaseNotExistsSql); db.Error != nil {
+		fkOffSql := "SET FOREIGN_KEY_CHECKS = 0;"
+		fkOnSql := "SET FOREIGN_KEY_CHECKS = 1;"
+
+		//先关闭外键约束
+		if db := s.client.Exec(fkOffSql); db.Error != nil {
 			return db.Error
 		}
-	}
-
-	fkOffSql := "SET FOREIGN_KEY_CHECKS = 0;"
-	fkOnSql := "SET FOREIGN_KEY_CHECKS = 1;"
-
-	//先关闭外键约束
-	if db := s.client.Exec(fkOffSql); db.Error != nil {
-		return db.Error
-	}
-	// 新建表
-	for schemaTable, status := range GFullProgress.Table {
-		useSql := "use " + status.Schema + ";"
-		if err = s.client.Exec(useSql).Error; err != nil {
-			logutil.Error("表结构初始化出错: use  ;" + status.Schema + ";" + err.Error())
-			return err
+		// 新建表
+		for schemaTable, status := range GFullProgress.Table {
+			useSql := "use " + status.Schema + ";"
+			if err = s.client.Exec(useSql).Error; err != nil {
+				logutil.Error("表结构初始化出错: use  ;" + status.Schema + ";" + err.Error())
+				return err
+			}
+			createSql := status.Sql
+			logutil.Infof("表结构初始化: " + schemaTable + ":" + createSql)
+			if err = s.client.Exec(createSql).Error; err != nil {
+				logutil.Error("表结构初始化出错: create table " + schemaTable + ";" + err.Error())
+				return err
+			}
 		}
-		createSql := status.Sql
-		logutil.Infof("表结构初始化: " + schemaTable + ":" + createSql)
-		if err = s.client.Exec(createSql).Error; err != nil {
-			logutil.Error("表结构初始化出错: create table " + schemaTable + ";" + err.Error())
-			return err
+		//先开启外键约束
+		if db := s.client.Exec(fkOnSql); db.Error != nil {
+			return db.Error
 		}
+		return err
 	}
-	//先开启外键约束
-	if db := s.client.Exec(fkOnSql); db.Error != nil {
-		return db.Error
-	}
-	return err
+	return nil
 }
 
 func (s *MysqlEndpoint) Ping() error {
@@ -643,6 +648,7 @@ func (s *MysqlEndpoint) Close() {
 			sqlDb.Close()
 		}
 	}
+	return
 }
 
 func (s *MysqlEndpoint) getDdlClient(schema string) (err error) {
@@ -688,4 +694,19 @@ func IsContain(items []string, item string) bool {
 		}
 	}
 	return false
+}
+
+func (s *MysqlEndpoint) FindSQLToMap(sql string) ([]map[string]interface{}, error) {
+	var sqlResult []map[string]interface{}
+	// s.client.Select(sql).Find(&sqlResult).Debug()
+	db, err := s.GetMasterClient()
+	if err != nil {
+		return nil, err
+	}
+	db.Raw(sql).Find(&sqlResult)
+	return sqlResult, nil
+}
+
+func insertBeReplace(insertSQL string) string {
+	return "replace" + insertSQL[6:]
 }

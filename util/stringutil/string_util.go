@@ -31,7 +31,7 @@ import (
 	"github.com/pquerna/ffjson/ffjson"
 	"github.com/satori/go.uuid"
 
-	"go-mysql-transfer/util/logutil"
+	"go-mysql-sync/util/logutil"
 )
 
 // 产生UUID

@@ -30,11 +30,11 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 
-	"go-mysql-transfer/global"
-	"go-mysql-transfer/service/luaengine"
-	"go-mysql-transfer/storage"
-	"go-mysql-transfer/util/logutil"
-	"go-mysql-transfer/util/stringutil"
+	"go-mysql-sync/global"
+	"go-mysql-sync/service/luaengine"
+	"go-mysql-sync/storage"
+	"go-mysql-sync/util/logutil"
+	"go-mysql-sync/util/stringutil"
 )
 
 type MongoEndpoint struct {
