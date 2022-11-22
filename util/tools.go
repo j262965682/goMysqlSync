@@ -158,3 +158,32 @@ func indexToTableName(index int, array []string) (tableInfo []string) {
 //
 //	cached.BatchAdd(list)
 //}
+
+func DDLChangeTableName(sql, newTableName string) (string, error) {
+	// table的位置
+	indexOfTable := -1
+	indexOfOn := -1
+	array := strings.Split(sql, " ")
+	for index, value := range array {
+		if strings.ToLower(value) == "on" {
+			indexOfOn = index
+		}
+		if strings.ToLower(value) == "table" {
+			indexOfTable = index
+			break
+		}
+	}
+	if indexOfTable > -1 {
+		array[indexOfTable+1] = "`" + newTableName + "`"
+	} else if indexOfTable == -1 && indexOfOn > -1 {
+		tableName := array[indexOfOn+1]
+		if tableName[len(tableName)-1:] == ";" {
+			array[indexOfOn+1] = "`" + newTableName + "`" + ";"
+		} else {
+			array[indexOfOn+1] = "`" + newTableName + "`"
+		}
+	} else {
+		return "", errors.New("DDL解析表名报错")
+	}
+	return strings.Join(array, " "), nil
+}

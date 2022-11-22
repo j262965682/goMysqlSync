@@ -65,7 +65,9 @@ type EsMapping struct {
 
 type Rule struct {
 	Schema                   string `yaml:"schema"`
+	TargetSchema             string `yaml:"target_schema"`
 	Table                    string `yaml:"table"`
+	TargetTable              string `yaml:"target_table"`
 	OrderByColumn            string `yaml:"order_by_column"`
 	ColumnLowerCase          bool   `yaml:"column_lower_case"`          // 列名称转为小写
 	ColumnUpperCase          bool   `yaml:"column_upper_case"`          // 列名称转为大写

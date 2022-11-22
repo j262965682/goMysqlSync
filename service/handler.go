@@ -19,13 +19,14 @@ package service
 
 import (
 	"fmt"
+	"github.com/siddontang/go-mysql/schema"
+	"go-mysql-sync/service/endpoint"
 	"go-mysql-sync/storage"
 	"go-mysql-sync/util"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/juju/errors"
 	"github.com/siddontang/go-mysql/canal"
 	"github.com/siddontang/go-mysql/mysql"
 	"github.com/siddontang/go-mysql/replication"
@@ -51,16 +52,17 @@ func (h *handler) OnTableChanged(schema, table string) error {
 
 	//判断 事件归属表 是不是在监听范围内   1.参数 table_all_in 时只需要判断 schema 合适就行 2.参数为表名时，需要限定表名
 	//ruleKey := strings.ToLower(schema + ":" + table)
-	fmt.Println("OnTableChanged:", schema, table)
+	// global.
+	// fmt.Println("OnTableChanged:", schema, table)
 	if !(global.RuleInsExist(schema+":table_all_in") || global.RuleInsExist(schema+":"+table)) {
 		return nil
 	}
-
+	fmt.Println("OnTableChanged:", schema, table)
 	//更新表的元数据
-	err := h.transfer.updateRule(schema, table)
-	if err != nil {
-		return errors.Trace(err)
-	}
+	//err := h.transfer.updateRule(schema, table)
+	//if err != nil {
+	//	return errors.Trace(err)
+	//}
 	return nil
 }
 
@@ -69,6 +71,7 @@ func (h *handler) OnDDL(nextPos mysql.Position, queryEvent *replication.QueryEve
 	var is bool
 	var tableName, schema, ddlSql, ruleKey string
 	var tableInfo []string
+	var changeSQL, targetRuleKey string
 
 	//rr := global.RowRequestPool.Get().(*global.RowRequest)
 
@@ -87,7 +90,15 @@ func (h *handler) OnDDL(nextPos mysql.Position, queryEvent *replication.QueryEve
 		schema = tableInfo[1]
 	}
 
+	// CREATE [UNIQUE][CLUSTER] INDEX <索引名> ON <表名> (<列名> [<次序>] [,<列名> [<次序>]])
+	// ALTER TABLE Student ADD Scome INT;  /*添加字段*/
+	// strings.Join(s, ",")     切片合成字符串
+	// strings.Split(ss, ",")   字符串拆成切片
+	schemaTable := schema + "." + tableName
+	tableStatus := endpoint.GFullProgress.Table[schemaTable]
+
 	ruleKey = strings.ToLower(schema + ":" + tableName)
+	targetRuleKey = tableStatus.TargetSchema + ":" + tableStatus.TargetName
 	if !(global.RuleInsExist(schema+":table_all_in") || global.RuleInsExist(schema+":"+tableName)) {
 		return nil
 	}
@@ -107,10 +118,15 @@ func (h *handler) OnDDL(nextPos mysql.Position, queryEvent *replication.QueryEve
 
 		rr := &global.RowRequest{}
 		logutil.Info("DDL Schema-Table Key :" + ruleKey)
-		rr.Query = ddlSql
+		// 变更表名后的DDL
+		changeSQL, err = util.DDLChangeTableName(ddlSql, tableStatus.TargetName)
+		if err != nil {
+			logutil.Errorf("RecordPosition wrong !,after DDL save sync position %s err %v, close sync", pos, err)
+		}
+		rr.Query = changeSQL
 		rr.Action = "DDL"
-		rr.RuleKey = ruleKey
-		rr.Schema = schema
+		rr.RuleKey = targetRuleKey
+		rr.Schema = tableStatus.TargetSchema
 		// rr 带入 Timestamp 用于判断该DDL是否执行过
 		//rr.Timestamp = pos.Timestamp
 
@@ -168,7 +184,7 @@ func (h *handler) OnXID(nextPos mysql.Position) error {
 	return h.transfer.ctx.Err()
 }
 
-//要从事件里面取事件的对应事件 ，通过事件的对应时间 去取 postion 的五分钟前的点位，这就需要服务器的时间基本一致
+// OnRow 要从事件里面取事件的对应事件 ，通过事件的对应时间 去取 postion 的五分钟前的点位，这就需要服务器的时间基本一致
 func (h *handler) OnRow(e *canal.RowsEvent) error {
 	//fmt.Println("拉取到一条记录")
 	//取事件归属表的元数据
@@ -180,9 +196,20 @@ func (h *handler) OnRow(e *canal.RowsEvent) error {
 	//fmt.Println("OnRow")
 	//fmt.Println(e.Table.Schema + ":" + e.Table.Name)
 	ruleKey := strings.ToLower(e.Table.Schema + ":" + e.Table.Name)
+	//fmt.Println("ruleKey:", ruleKey)
+	//fmt.Println("接受binlog")
+	//fmt.Println(e)
+	//fmt.Println("检测库表")
 	if !(global.RuleInsExist(e.Table.Schema+":table_all_in") || global.RuleInsExist(e.Table.Schema+":"+e.Table.Name)) {
+		//fmt.Println("库表不匹配，跳过")
 		return nil
 	}
+	//fmt.Println("检测库表，通过")
+	schemaTable := e.Table.Schema + "." + e.Table.Name
+	tableStatus := endpoint.GFullProgress.Table[schemaTable]
+	targetRuleKey := tableStatus.TargetSchema + ":" + tableStatus.TargetName
+	//e.Table.Schema = tableStatus.TargetSchema
+	//e.Table.Name = tableStatus.TargetName
 
 	//record := fmt.Sprintf("%v %v %s %v\n", e.Table.Schema, e.Table.Name, e.Action, e.Rows)
 	//fmt.Println("OnRow", record)
@@ -194,6 +221,8 @@ func (h *handler) OnRow(e *canal.RowsEvent) error {
 	//取行id
 	index := getIDIndex(e)
 
+	//fmt.Println(e)
+
 	if e.Action == canal.UpdateAction {
 		//fmt.Println(e.Rows)
 		//取行id
@@ -201,9 +230,18 @@ func (h *handler) OnRow(e *canal.RowsEvent) error {
 			if (i+1)%2 == 0 {
 				rr := &global.RowRequest{}
 				//rr := global.RowRequestPool.Get().(*global.RowRequest)
-				rr.RuleKey = ruleKey
+				// 新表名配置
+				rr.RuleKey = targetRuleKey
 				rr.Action = e.Action
-				rr.Table = e.Table
+				//*rr.Table = *e.Table
+
+				tableInfo := new(schema.Table)
+				*tableInfo = *e.Table
+				rr.Table = tableInfo
+				// 新表名配置
+				rr.Table.Schema = tableStatus.TargetSchema
+				rr.Table.Name = tableStatus.TargetName
+
 				if e.Header != nil {
 					rr.Timestamp = e.Header.Timestamp
 				}
@@ -220,9 +258,16 @@ func (h *handler) OnRow(e *canal.RowsEvent) error {
 	} else {
 		for _, row := range e.Rows {
 			rr := &global.RowRequest{}
+			tableInfo := new(schema.Table)
 			rr.RuleKey = ruleKey
 			rr.Action = e.Action
-			rr.Table = e.Table
+			*tableInfo = *e.Table
+			rr.Table = tableInfo
+
+			// 新表名配置
+			rr.Table.Schema = tableStatus.TargetSchema
+			rr.Table.Name = tableStatus.TargetName
+
 			if e.Header != nil {
 				rr.Timestamp = e.Header.Timestamp
 			}

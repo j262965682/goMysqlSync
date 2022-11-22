@@ -34,13 +34,15 @@ type FullOfProgress struct {
 }
 
 type TableStatus struct {
-	Schema  string
-	Name    string
-	Rows    int64  // 每个表的行数
-	Done    bool   // 每个表是否完成全量
-	Sql     string //建表语句
-	Columns []schema.TableColumn
-	RangeId RangeID //id范围
+	Schema       string
+	TargetSchema string
+	Name         string
+	TargetName   string
+	Rows         int64  // 每个表的行数
+	Done         bool   // 每个表是否完成全量
+	Sql          string //建表语句
+	Columns      []schema.TableColumn
+	RangeId      RangeID //id范围
 }
 
 type RangeID struct {
@@ -142,9 +144,9 @@ func (s *MysqlEndpoint) SyncTableStructure() error {
 	// 先 检测是否有id主键 再 拉取建库和建表sql 再执行建库和建表sql
 	// 拉取 建库和建表sql
 	for _, rule := range global.RuleInsList() {
-		// 先把加入 库列表
-		if result := IsContain(createSchemas, rule.Schema); !result {
-			createSchemas = append(createSchemas, rule.Schema)
+		// 先把加入 库列表  目的库名
+		if result := IsContain(createSchemas, rule.TargetSchema); !result {
+			createSchemas = append(createSchemas, rule.TargetSchema)
 		}
 		// 某个库下的所有表
 		if rule.Table == "table_all_in" {
@@ -166,22 +168,25 @@ func (s *MysqlEndpoint) SyncTableStructure() error {
 				masterDb.Table(schemaTable).Count(&count)
 
 				tableDump[schemaTable] = TableStatus{
-					Schema: rule.Schema,
-					Name:   table.TableName,
-					Rows:   count,
-					Done:   false,
-					Sql:    tableDesc.CreateTable,
+					Schema:       rule.Schema,
+					TargetSchema: rule.TargetSchema,
+					Name:         table.TableName,
+					TargetName:   rule.TargetTable,
+					Rows:         count,
+					Done:         false,
+					Sql:          tableDesc.CreateTable,
 				}
 			}
 		} else {
 			logutil.BothInfof("获取 %s.%s 表信息", rule.Schema, rule.Table)
 			// 单表
 			schemaTable := rule.Schema + "." + rule.Table
+			// TargetSchemaTable := rule.TargetSchema + "." + rule.TargetTable
 			// 检查表是否有 id主键
 			masterDb.Table("information_schema.COLUMNS").Where(`TABLE_SCHEMA = ? and table_name = ? and COLUMN_NAME = 'id'`, rule.Schema, rule.Table).Count(&count)
 			if count == 0 {
 				logutil.Error(rule.Schema + "." + rule.Table + "没有主键id" + err.Error())
-				return err
+				panic(rule.Schema + "." + rule.Table + "没有主键id")
 			}
 			// 拉取 create table SQL
 			sql := "SHOW CREATE TABLE " + schemaTable + ";"
@@ -190,11 +195,13 @@ func (s *MysqlEndpoint) SyncTableStructure() error {
 			masterDb.Table(schemaTable).Count(&count)
 
 			tableDump[schemaTable] = TableStatus{
-				Schema: rule.Schema,
-				Name:   rule.Table,
-				Rows:   count,
-				Done:   false,
-				Sql:    tableDesc.CreateTable,
+				Schema:       rule.Schema,
+				TargetSchema: rule.TargetSchema,
+				Name:         rule.Table,
+				TargetName:   rule.TargetTable,
+				Rows:         count,
+				Done:         false,
+				Sql:          tableDesc.CreateTable,
 			}
 		}
 	}
@@ -202,7 +209,7 @@ func (s *MysqlEndpoint) SyncTableStructure() error {
 	GFullProgress.Table = tableDump
 	// 根据 表结构标识 判断是否需要执行表结构
 	if util.GSchemaFlag {
-		// 执行建库
+		// 执行建库  目标库
 		for _, schema := range createSchemas {
 			logutil.BothInfof("新建 %s 库", schema)
 			// CREATE DATABASE IF NOT EXISTS mytestdb CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_general_ci';
@@ -219,17 +226,19 @@ func (s *MysqlEndpoint) SyncTableStructure() error {
 		if db := s.client.Exec(fkOffSql); db.Error != nil {
 			return db.Error
 		}
-		// 新建表
-		for schemaTable, status := range GFullProgress.Table {
-			useSql := "use " + status.Schema + ";"
+		// 新建表    GFullProgress.Table
+		for _, status := range GFullProgress.Table {
+			useSql := "use " + status.TargetSchema + ";"
 			if err = s.client.Exec(useSql).Error; err != nil {
-				logutil.Error("表结构初始化出错: use  ;" + status.Schema + ";" + err.Error())
+				logutil.Error("表结构初始化出错: use  ;" + status.TargetSchema + ";" + err.Error())
 				return err
 			}
-			createSql := status.Sql
-			logutil.Infof("表结构初始化: " + schemaTable + ":" + createSql)
+			// 要把表结构里第一个匹配到的表名 `table_name` 替换成新表名
+			createSql := createTableSqlChangeTableName(status.Sql, status.Name, status.TargetName)
+
+			logutil.Infof("表结构初始化: " + status.TargetSchema + "." + status.TargetName + ":" + createSql)
 			if err = s.client.Exec(createSql).Error; err != nil {
-				logutil.Error("表结构初始化出错: create table " + schemaTable + ";" + err.Error())
+				logutil.Error("表结构初始化出错: create table " + status.TargetSchema + "." + status.TargetName + ";" + err.Error())
 				return err
 			}
 		}
@@ -709,4 +718,10 @@ func (s *MysqlEndpoint) FindSQLToMap(sql string) ([]map[string]interface{}, erro
 
 func insertBeReplace(insertSQL string) string {
 	return "replace" + insertSQL[6:]
+}
+
+func createTableSqlChangeTableName(sql string, OldTableName string, NewTableName string) string {
+	OldTableNameSwap := "`" + OldTableName + "`"
+	NewTableNameSwap := "`" + NewTableName + "`"
+	return strings.Replace(sql, OldTableNameSwap, NewTableNameSwap, 1)
 }

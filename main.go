@@ -131,6 +131,7 @@ func main() {
 			util.SetSchemaFlag(true)
 			util.SetStockFlag(true)
 			util.SetIncrFlag(true)
+			fmt.Println("全量加增量")
 		default:
 			fmt.Println("Unidentifiable number,only 1 to 6.")
 			return

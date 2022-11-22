@@ -69,10 +69,11 @@ func NewStockService(t *TransferService) *StockService {
 }
 
 type stockRequest struct {
-	key                 string
+	key                 string //新表名
 	columnsString       string
 	columnsStringBTABLE string
 	batch               int64
+	SourceSchemaTable   string
 }
 
 func (s *StockService) Run() error {
@@ -90,8 +91,11 @@ func (s *StockService) Run() error {
 		startTime := dateutil.NowMillisecond()
 		logutil.BothInfof(fmt.Sprintf("全量同步开始,批量小大为 size: %d", s.dumpRecordRows))
 		size := s.dumpRecordRows
-
+		//  key 为旧表名
 		for key, status := range s.table {
+			sourceSchemaTable := status.Schema + "." + status.Name
+			// 带进来的 key就是新库表名
+			TargetSchemaTable := status.TargetSchema + "." + status.TargetName
 			// 取表的列
 			if tableMate, err = s.canal.GetTable(status.Schema, status.Name); err != nil {
 				errors.Trace(err)
@@ -123,12 +127,12 @@ func (s *StockService) Run() error {
 			pool, _ := ants.NewPoolWithFunc(global.Cfg().DumpThreads, func(stockReq interface{}) {
 				req := stockReq.(*stockRequest)
 				var n int
-				s.syncBatchRows(req.key, req.columnsString, req.columnsStringBTABLE, req.batch, n)
+				s.syncBatchRows(req.SourceSchemaTable, req.key, req.columnsString, req.columnsStringBTABLE, req.batch, n)
 				s.wg.Done()
 			})
 			var index int64
 			for index = 1; index <= batch; index++ {
-				var oneStock = &stockRequest{key: key, columnsString: columnsString, columnsStringBTABLE: columnsStringBTABLE, batch: index}
+				var oneStock = &stockRequest{key: TargetSchemaTable, columnsString: columnsString, columnsStringBTABLE: columnsStringBTABLE, batch: index, SourceSchemaTable: sourceSchemaTable}
 				s.wg.Add(1)
 				pool.Invoke(oneStock)
 			}
@@ -325,7 +329,7 @@ func (s *StockService) getColumnsStringBTABLE(tableColumn []schema.TableColumn) 
 	return columns
 }
 
-func (s *StockService) syncBatchRows(schemaTable string, columns string, columnsB string, batch int64, threadNum int) error {
+func (s *StockService) syncBatchRows(SourceSchemaTable string, TargetSchemaTable string, columns string, columnsB string, batch int64, threadNum int) error {
 	//var mysqlEndpoint endpoint.Endpoint
 	//if s.shutoff.Load() {
 	//	return errors.New("shutoff")
@@ -337,7 +341,7 @@ func (s *StockService) syncBatchRows(schemaTable string, columns string, columns
 	offset := s.offset(batch)
 
 	//  select b.* from (select id from zlb_expense_form_check_result order by id limit 100000,1000) a left join zlb_expense_form_check_result b on a.id=b.id
-	selectSql := fmt.Sprintf("select %s from (select id from %s order by id limit %d,%d) a left join %s b on a.id=b.id", columnsB, schemaTable, offset, s.dumpRecordRows, schemaTable)
+	selectSql := fmt.Sprintf("select %s from (select id from %s order by id limit %d,%d) a left join %s b on a.id=b.id", columnsB, SourceSchemaTable, offset, s.dumpRecordRows, SourceSchemaTable)
 
 	//logutil.Info(selectSql)
 
@@ -356,45 +360,20 @@ func (s *StockService) syncBatchRows(schemaTable string, columns string, columns
 
 	rowNumber := len(resultSet)
 	if rowNumber == 0 {
-		logutil.Infof("未查询到数据: %s : limit %d, %d", schemaTable, offset, s.dumpRecordRows)
+		logutil.Infof("未查询到数据: %s : limit %d, %d", SourceSchemaTable, offset, s.dumpRecordRows)
 		return nil
 	}
 	// 插入sql的前半部分
-	insertTable := fmt.Sprintf(`INSERT IGNORE INTO %s (%s) VALUES`, schemaTable, columns)
+	insertTable := fmt.Sprintf(`INSERT IGNORE INTO %s (%s) VALUES`, TargetSchemaTable, columns)
 	// 插入sql的后半部分
 	var insertValues string // (?,?,?),(),()
 	// values list
-	allValues := make([]interface{}, 0, len(s.table[schemaTable].Columns)*rowNumber)
-
-	//// 用 canal 来处理结果集
-	//for i := 0; i < rowNumber; i++ {
-	//	rowValues := make([]interface{}, 0, len(s.table[schemaTable].Columns))
-	//	var itemValues string
-	//	itemValues = strings.Repeat(" ?,", len(s.table[schemaTable].Columns))
-	//	itemValues = stringutil.CutLastString(itemValues, 1)
-	//	itemValues = fmt.Sprintf("( %s )", itemValues)
-	//
-	//	if insertValues != "" {
-	//		insertValues = insertValues + ","
-	//	}
-	//	insertValues = insertValues + itemValues
-	//
-	//	for j := 0; j < len(s.table[schemaTable].Columns); j++ {
-	//		val, err := resultSet.GetValue(i, j)
-	//		if err != nil {
-	//			logutil.Errorf("数据导出错误: %s - %s", selectSql, err.Error())
-	//			break
-	//		}
-	//		rowValues = append(rowValues, val)
-	//	}
-	//
-	//	allValues = append(allValues, rowValues...)
-	//}
+	allValues := make([]interface{}, 0, len(s.table[SourceSchemaTable].Columns)*rowNumber)
 
 	for index := range resultSet {
-		rowValues := make([]interface{}, 0, len(s.table[schemaTable].Columns))
+		rowValues := make([]interface{}, 0, len(s.table[SourceSchemaTable].Columns))
 		var itemValues string
-		itemValues = strings.Repeat(" ?,", len(s.table[schemaTable].Columns))
+		itemValues = strings.Repeat(" ?,", len(s.table[SourceSchemaTable].Columns))
 		itemValues = stringutil.CutLastString(itemValues, 1)
 		itemValues = fmt.Sprintf("( %s )", itemValues)
 
@@ -403,7 +382,7 @@ func (s *StockService) syncBatchRows(schemaTable string, columns string, columns
 		}
 		insertValues = insertValues + itemValues
 
-		for _, column := range s.table[schemaTable].Columns {
+		for _, column := range s.table[SourceSchemaTable].Columns {
 			val := resultSet[index][column.Name]
 			rowValues = append(rowValues, val)
 		}
@@ -417,7 +396,7 @@ func (s *StockService) syncBatchRows(schemaTable string, columns string, columns
 		return err
 	}
 	//logutil.BothInfof(fmt.Sprintf("%s 导入数据 %d 条", schemaTable, s.incCounter(schemaTable, rowsAffected)))
-	logutil.BothInfof(fmt.Sprintf("%s 导入数据 %d 条", schemaTable, rowsAffected))
+	logutil.BothInfof(fmt.Sprintf("%s 导入数据 %d 条", TargetSchemaTable, rowsAffected))
 	//if rowsAffected == 0 {
 	//	logutil.BothInfof(selectSql)
 	//}

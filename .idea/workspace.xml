@@ -4,60 +4,30 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="2d05ce46-ddb1-4f8b-8aaf-78501415d18a" name="Default Changelist" comment="Merge remote-tracking branch 'origin/main'&#10;&#10;# Conflicts:&#10;#&#9;.idea/workspace.xml">
+    <list default="true" id="2d05ce46-ddb1-4f8b-8aaf-78501415d18a" name="Default Changelist" comment="Merge remote-tracking branch 'origin/main'">
+      <change afterPath="$PROJECT_DIR$/util/tools_test.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app.yml" beforeDir="false" afterPath="$PROJECT_DIR$/app.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/db/data.db" beforeDir="false" afterPath="$PROJECT_DIR$/db/data.db" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/global/config.go" beforeDir="false" afterPath="$PROJECT_DIR$/global/config.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/global/debug.go" beforeDir="false" afterPath="$PROJECT_DIR$/global/debug.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/global/rate_counter.go" beforeDir="false" afterPath="$PROJECT_DIR$/global/rate_counter.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/global/rule.go" beforeDir="false" afterPath="$PROJECT_DIR$/global/rule.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service/application_service.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/application_service.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service/cluster/election.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/cluster/election.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service/cluster/etcd_election.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/cluster/etcd_election.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service/cluster/zk_election.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/cluster/zk_election.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service/cluster_service.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/cluster_service.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service/endpoint/elastic6.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/endpoint/elastic6.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service/endpoint/elastic7.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/endpoint/elastic7.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service/endpoint/endpoint.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/endpoint/endpoint.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service/endpoint/kafka.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/endpoint/kafka.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service/endpoint/mongo.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/endpoint/mongo.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/service/endpoint/mysql.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/endpoint/mysql.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service/endpoint/rabbit.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/endpoint/rabbit.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service/endpoint/redis.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/endpoint/redis.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service/endpoint/rocket.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/endpoint/rocket.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/service/endpoint/mysql_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/endpoint/mysql_test.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/service/handler.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/handler.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service/luaengine/actuator.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/luaengine/actuator.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service/luaengine/db_actuator.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/luaengine/db_actuator.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service/luaengine/es_actuator.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/luaengine/es_actuator.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service/luaengine/http_actuator.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/luaengine/http_actuator.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service/luaengine/mongo_actuator.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/luaengine/mongo_actuator.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service/luaengine/mq_actuator.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/luaengine/mq_actuator.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service/luaengine/redis_actuator.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/luaengine/redis_actuator.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/service/stock_service.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/stock_service.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service/transfer_service.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/transfer_service.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/bolt_position_storage.go" beforeDir="false" afterPath="$PROJECT_DIR$/storage/bolt_position_storage.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/bolt_row_storage.go" beforeDir="false" afterPath="$PROJECT_DIR$/storage/bolt_row_storage.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/election_storage.go" beforeDir="false" afterPath="$PROJECT_DIR$/storage/election_storage.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/etcd_position_storage.go" beforeDir="false" afterPath="$PROJECT_DIR$/storage/etcd_position_storage.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/position_storage.go" beforeDir="false" afterPath="$PROJECT_DIR$/storage/position_storage.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/storage.go" beforeDir="false" afterPath="$PROJECT_DIR$/storage/storage.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/zk_position_storage.go" beforeDir="false" afterPath="$PROJECT_DIR$/storage/zk_position_storage.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/util/httputil/perform.go" beforeDir="false" afterPath="$PROJECT_DIR$/util/httputil/perform.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/util/logutil/global_log.go" beforeDir="false" afterPath="$PROJECT_DIR$/util/logutil/global_log.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/util/logutil/zap_log.go" beforeDir="false" afterPath="$PROJECT_DIR$/util/logutil/zap_log.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/util/stringutil/string_util.go" beforeDir="false" afterPath="$PROJECT_DIR$/util/stringutil/string_util.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/util/stringutil/string_util_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/util/stringutil/string_util_test.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/util/tools.go" beforeDir="false" afterPath="$PROJECT_DIR$/util/tools.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Go File" />
+      </list>
+    </option>
   </component>
   <component name="GOROOT" url="file://$USER_HOME$/go/go1.17.5" />
   <component name="Git.Settings">
@@ -83,6 +53,7 @@
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">
+    <property name="DefaultGoTemplateProperty" value="Go File" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
@@ -95,11 +66,11 @@
     <property name="go.sdk.automatically.set" value="true" />
     <property name="go.tried.to.enable.integration.vgo.integrator" value="true" />
     <property name="go.watchers.conflict.with.on.save.actions.check.performed" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../../tableInfoWeb/iris-admin/server" />
     <property name="settings.editor.selected.configurable" value="go.vgo" />
     <property name="vue.rearranger.settings.migration" value="true" />
   </component>
-  <component name="RunManager" selected="Go Test.TestInt in go-mysql-sync/util/stringutil">
+  <component name="RunManager" selected="Go Test.TestDdlChangeTableName in go-mysql-sync/util">
     <configuration name="go build go-mysql-sync" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true">
       <module name="goMysqlSync" />
       <working_directory value="$PROJECT_DIR$" />
@@ -107,6 +78,30 @@
       <package value="go-mysql-sync" />
       <directory value="$PROJECT_DIR$" />
       <filePath value="$PROJECT_DIR$/main.go" />
+      <method v="2" />
+    </configuration>
+    <configuration name="TestChangeTable in go-mysql-sync/service/endpoint" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="goMysqlSync" />
+      <working_directory value="$PROJECT_DIR$/service/endpoint" />
+      <root_directory value="$PROJECT_DIR$" />
+      <kind value="PACKAGE" />
+      <package value="go-mysql-sync/service/endpoint" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$" />
+      <framework value="gotest" />
+      <pattern value="^\QTestChangeTable\E$" />
+      <method v="2" />
+    </configuration>
+    <configuration name="TestDdlChangeTableName in go-mysql-sync/util" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="goMysqlSync" />
+      <working_directory value="$PROJECT_DIR$/util" />
+      <root_directory value="$PROJECT_DIR$" />
+      <kind value="PACKAGE" />
+      <package value="go-mysql-sync/util" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$" />
+      <framework value="gotest" />
+      <pattern value="^\QTestDdlChangeTableName\E$" />
       <method v="2" />
     </configuration>
     <configuration name="TestInt in go-mysql-sync/util/stringutil" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
@@ -137,9 +132,13 @@
       <item itemvalue="Go Build.go build go-mysql-sync" />
       <item itemvalue="Go Test.TestIsContain in go-mysql-transfer/service/endpoint" />
       <item itemvalue="Go Test.TestInt in go-mysql-sync/util/stringutil" />
+      <item itemvalue="Go Test.TestChangeTable in go-mysql-sync/service/endpoint" />
+      <item itemvalue="Go Test.TestDdlChangeTableName in go-mysql-sync/util" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Go Test.TestDdlChangeTableName in go-mysql-sync/util" />
+        <item itemvalue="Go Test.TestChangeTable in go-mysql-sync/service/endpoint" />
         <item itemvalue="Go Test.TestInt in go-mysql-sync/util/stringutil" />
         <item itemvalue="Go Build.go build go-mysql-sync" />
         <item itemvalue="Go Test.TestIsContain in go-mysql-transfer/service/endpoint" />
@@ -175,7 +174,8 @@
     <MESSAGE value="修正" />
     <MESSAGE value="修改全量同步，不用mysqldump，按批量查询取数插入" />
     <MESSAGE value="Merge remote-tracking branch 'origin/main'&#10;&#10;# Conflicts:&#10;#&#9;.idea/workspace.xml" />
-    <option name="LAST_COMMIT_MESSAGE" value="Merge remote-tracking branch 'origin/main'&#10;&#10;# Conflicts:&#10;#&#9;.idea/workspace.xml" />
+    <MESSAGE value="Merge remote-tracking branch 'origin/main'" />
+    <option name="LAST_COMMIT_MESSAGE" value="Merge remote-tracking branch 'origin/main'" />
   </component>
   <component name="VgoProject">
     <integration-enabled>true</integration-enabled>

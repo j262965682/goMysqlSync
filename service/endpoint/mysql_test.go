@@ -49,3 +49,13 @@ func TestIsContain(t *testing.T) {
 	schema := IsContain(items, item)
 	fmt.Println(schema)
 }
+
+func TestChangeTable(t *testing.T) {
+	sql := "CREATE TABLE `budget_dict` (\n  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',\n  `config_code` varchar(20) NOT NULL COMMENT '数据字典-code',\n  `config_value` varchar(50) NOT NULL COMMENT '数据字典-value',\n  `config_seq` int(11) DEFAULT '1' COMMENT '数据字典-顺序',\n  `type_code` varchar(50) NOT NULL COMMENT '数据字典类型编码',\n  `type_name` varchar(50) NOT NULL COMMENT '数据字典类型名称',\n  `enable` tinyint(1) NOT NULL DEFAULT '1' COMMENT '是否启用(1-启用; 0-停用)',\n  `add_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '数据行创建时间',\n  `modified_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '数据行最后修改时间',\n  PRIMARY KEY (`id`) USING BTREE,\n  KEY `idx_add_time` (`add_time`) USING BTREE,\n  KEY `idx_type_code` (`type_code`) USING BTREE,\n  KEY `idx_config_code` (`config_code`) USING BTREE\n) ENGINE=InnoDB AUTO_INCREMENT=35 DEFAULT CHARSET=utf8 COMMENT='预算字典表'"
+	oldTable := "budget_dict"
+	newTable := "t2"
+
+	newSQL := createTableSqlChangeTableName(sql, oldTable, newTable)
+	fmt.Println(len(newSQL))
+	fmt.Println(newSQL)
+}
