@@ -26,11 +26,66 @@ set GOARCH=amd64
 
 go build -o "goMysqlSync"
 
-chmod 777 goMysqlSync
+chmod +x goMysqlSync
 
 编辑配置文件 app.yml
+```yaml
+#源 mysql 配置
+addr: 127.0.0.1:3306
+user: test_sync
+pass: test_sync
+charset : utf8
+#伪装id
+slave_id: 520               #slave ID
 
-nohup ./goMysqlSync  -full  >/dev/null 2>goMysqlSync.log & 
+#系统相关配置
+db_days: 30
+data_dir:                  #/usr/local/goMysqlSync #应用产生的数据存放地址，包括日志、缓存数据等，默认当前运行目录下store文件夹
+logger:
+  file_name: system.log
+  level: debug  #日志级别；支持：debug|info|warn|error，默认info
+  store:        #/usr/local/goMysqlSync
+
+#prometheus相关配置
+label: goMysqlSync                 #prometheus exporter的tag
+enable_exporter: true       #是否启用prometheus exporter，默认false
+exporter_addr: 9595         #prometheus exporter端口，默认9595
+
+#目标类型
+target: mysql
+mysql_addrs: 127.0.0.2:3306   #mysql地址，多个用逗号分隔
+mysql_username: test_sync     #mysql用户名
+mysql_pass: test_sync         #mysql密码
+threads: 20                   #增量数据回放多线程数量
+record_rows: 255              #增量数据回放每批次大小
+dump_threads: 40              #全量同步线程数
+dump_record_rows: 1000        #全量同步每批次大小
+
+#规则配置
+rule:
+  -
+    schema: db_student            #源库名
+    target_schema: db_student_bak #目标库名
+    table: student                #源表名
+    target_table: student_bak     #目标表名
+  -
+    schema: db_student            #源库名
+    target_schema: db_student_bak #目标库名
+    table: budget_dict            #源表名
+    target_table: budget_dict     #目标表名
+  -
+    schema: db_student            #源库名
+    target_schema: db_student_bak #目标库名
+    table: economy_section           #源表名
+    target_table: economy_section    #目标表名
+  -
+    schema: db_student            #源库名
+    target_schema: db_student_bak #目标库名
+    table: funds_nature           #源表名
+    target_table: funds_nature    #目标表名
+```
+
+nohup ./goMysqlSync  --sync-mode=6  >/dev/null 2>goMysqlSync.log & 
 
 ### 监控
 
