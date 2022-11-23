@@ -84,8 +84,11 @@ rule:
     table: funds_nature           #源表名
     target_table: funds_nature    #目标表名
 ```
+启动
+```shell
+nohup ./goMysqlSync  --sync-mode=6  >/dev/null 2>nohup.goMysqlSync.log & 
+```
 
-nohup ./goMysqlSync  --sync-mode=6  >/dev/null 2>goMysqlSync.log & 
 
 ### 监控
 

@@ -4,8 +4,8 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="2d05ce46-ddb1-4f8b-8aaf-78501415d18a" name="Default Changelist" comment="变更初始指定库">
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+    <list default="true" id="2d05ce46-ddb1-4f8b-8aaf-78501415d18a" name="Default Changelist" comment="read.me">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app.yml" beforeDir="false" afterPath="$PROJECT_DIR$/app.yml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -185,7 +185,8 @@
     <MESSAGE value="Merge remote-tracking branch 'origin/main'" />
     <MESSAGE value="增加目的表可以配置功能" />
     <MESSAGE value="变更初始指定库" />
-    <option name="LAST_COMMIT_MESSAGE" value="变更初始指定库" />
+    <MESSAGE value="read.me" />
+    <option name="LAST_COMMIT_MESSAGE" value="read.me" />
   </component>
   <component name="VgoProject">
     <integration-enabled>true</integration-enabled>
