@@ -66,7 +66,7 @@ type DdlClient struct {
 
 func newMysqlEndpoint(c *global.Config) *MysqlEndpoint {
 	// dsn format: "user:password@addr?dbname"
-	dsn := c.MysqlUsername + ":" + c.MysqlPass + "@tcp(" + c.MysqlAddr + ")/" + "demo_sync?charset=utf8&parseTime=True&loc=Local"
+	dsn := c.MysqlUsername + ":" + c.MysqlPass + "@tcp(" + c.MysqlAddr + ")/" + "information_schema?charset=utf8&parseTime=True&loc=Local"
 	mysql := &MysqlEndpoint{}
 	newLogger := logger.New(
 		log.New(colorable.NewColorableStdout(), "\r\n", log.LstdFlags), // io writer
@@ -111,7 +111,7 @@ func (s *MysqlEndpoint) Start() error {
 }
 
 func (s *MysqlEndpoint) GetMasterClient() (db *gorm.DB, err error) {
-	dsn := s.config.User + ":" + s.config.Password + "@tcp(" + s.config.Addr + ")/" + "demo_sync?charset=utf8&parseTime=True&loc=Local"
+	dsn := s.config.User + ":" + s.config.Password + "@tcp(" + s.config.Addr + ")/" + "information_schema?charset=utf8&parseTime=True&loc=Local"
 	db, err = gorm.Open(gormMysql.New(gormMysql.Config{
 		DSN:                       dsn,   // DSN data source name
 		DefaultStringSize:         256,   // string 类型字段的默认长度

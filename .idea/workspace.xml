@@ -4,18 +4,10 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="2d05ce46-ddb1-4f8b-8aaf-78501415d18a" name="Default Changelist" comment="Merge remote-tracking branch 'origin/main'">
-      <change afterPath="$PROJECT_DIR$/util/tools_test.go" afterDir="false" />
+    <list default="true" id="2d05ce46-ddb1-4f8b-8aaf-78501415d18a" name="Default Changelist" comment="增加目的表可以配置功能">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app.yml" beforeDir="false" afterPath="$PROJECT_DIR$/app.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/db/data.db" beforeDir="false" afterPath="$PROJECT_DIR$/db/data.db" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/global/rule.go" beforeDir="false" afterPath="$PROJECT_DIR$/global/rule.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/service/endpoint/mysql.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/endpoint/mysql.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service/endpoint/mysql_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/endpoint/mysql_test.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service/handler.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/handler.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service/stock_service.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/stock_service.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/util/tools.go" beforeDir="false" afterPath="$PROJECT_DIR$/util/tools.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -66,11 +58,19 @@
     <property name="go.sdk.automatically.set" value="true" />
     <property name="go.tried.to.enable.integration.vgo.integrator" value="true" />
     <property name="go.watchers.conflict.with.on.save.actions.check.performed" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../../tableInfoWeb/iris-admin/server" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="settings.editor.selected.configurable" value="go.vgo" />
     <property name="vue.rearranger.settings.migration" value="true" />
   </component>
   <component name="RunManager" selected="Go Test.TestDdlChangeTableName in go-mysql-sync/util">
+    <configuration default="true" type="GoApplicationRunConfiguration" factoryName="Go Application">
+      <module name="goMysqlSync" />
+      <working_directory value="$PROJECT_DIR$" />
+      <kind value="FILE" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$" />
+      <method v="2" />
+    </configuration>
     <configuration name="go build go-mysql-sync" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true">
       <module name="goMysqlSync" />
       <working_directory value="$PROJECT_DIR$" />
@@ -128,6 +128,15 @@
       <pattern value="^\QTestIsContain\E$" />
       <method v="2" />
     </configuration>
+    <configuration default="true" type="GoTestRunConfiguration" factoryName="Go Test">
+      <module name="goMysqlSync" />
+      <working_directory value="$PROJECT_DIR$" />
+      <kind value="DIRECTORY" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$" />
+      <framework value="gotest" />
+      <method v="2" />
+    </configuration>
     <list>
       <item itemvalue="Go Build.go build go-mysql-sync" />
       <item itemvalue="Go Test.TestIsContain in go-mysql-transfer/service/endpoint" />
@@ -175,7 +184,8 @@
     <MESSAGE value="修改全量同步，不用mysqldump，按批量查询取数插入" />
     <MESSAGE value="Merge remote-tracking branch 'origin/main'&#10;&#10;# Conflicts:&#10;#&#9;.idea/workspace.xml" />
     <MESSAGE value="Merge remote-tracking branch 'origin/main'" />
-    <option name="LAST_COMMIT_MESSAGE" value="Merge remote-tracking branch 'origin/main'" />
+    <MESSAGE value="增加目的表可以配置功能" />
+    <option name="LAST_COMMIT_MESSAGE" value="增加目的表可以配置功能" />
   </component>
   <component name="VgoProject">
     <integration-enabled>true</integration-enabled>
